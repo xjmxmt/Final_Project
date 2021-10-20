@@ -1,0 +1,7 @@
+.DS_Store
+.gradle/
+.idea/
+MathTutor/.idea/
+MathTutor/logs/
+logs/
+gradlew.bat
