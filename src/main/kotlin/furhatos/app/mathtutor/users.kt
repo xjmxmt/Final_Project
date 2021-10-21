@@ -126,6 +126,7 @@ val User.questions : Array<Question>
 val User.current_question : Question
     get() = questions.get(score.getCurrentQuestionNumber())
 
+
 class Score{
 
     var points: Number = 10

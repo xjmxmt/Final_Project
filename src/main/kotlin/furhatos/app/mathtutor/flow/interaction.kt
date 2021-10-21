@@ -268,7 +268,7 @@ var AnswerWrong : State = state(FallbackState){
 
         furhat.say(random(
                 "I will give you one more try",
-                "You can do it! Try again",
+                "You can do it! Try again"
         )
         )
         goto(AskQuestion)
@@ -351,6 +351,7 @@ var UserFrustrated : State = state(FallbackState){
 
 var ExplainAnswer : State = state(FallbackState){
     onEntry {
+
         furhat.attendAll()
         furhat.say("Let me explain the question.")
         furhat.attendNobody()
@@ -372,15 +373,17 @@ var ExplainAnswer : State = state(FallbackState){
         furhat.say(current_q.explaination)
 
 
-        furhat.say("Alright, lets try again");
+        furhat.say("Alright, lets try the next question");
+        users.current.score.incorrectAnswer()
         goto(AskQuestion)
 
     }
 
     onResponse<Yes> {
-        furhat.say("Oke lets try again then!")
+        furhat.say("Oke lets try again with the next question!")
 
         //TODO Repeat the question.
+        users.current.score.incorrectAnswer()
         goto(AskQuestion)
     }
 
@@ -412,6 +415,7 @@ var EnoughExercisesEndState : State = state(FallbackState){
         furhat.attendNobody()
         furhat.say ("Hopefully you now have enough knowledge to solve percentage questions.")
         furhat.attendAll()
+        furhat.say("You can always come back and train more if you like to! Goodbye")
 
     }
 }
@@ -441,7 +445,7 @@ var UserWantsToStopCheck : State = state(FallbackState){
 var UserStoppedEndState : State = state(FallbackState){
     onEntry {
         furhat.attendAll()
-        furhat.say("You can always can come back again. Gooedbye")
+        furhat.say("You can always can come back again. Goodbye")
     }
 }
 
