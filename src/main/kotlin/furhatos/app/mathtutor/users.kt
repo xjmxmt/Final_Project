@@ -73,11 +73,26 @@ val User.info : CurrentUser
 //    Pain, Peace, Pleasure, Sadness, Sensitivity, Suffering, Surprise, Sympathy, Yearning, Nothing
 //}
 
+enum class PuzzleLevels {
+    easy,
+    medium,
+    hard
+}
+
 class CurrentUser {
     private var num_of_grade: Int = 0
+    private var LevelSet: PuzzleLevels? = null
 
     fun setGradeNum(num:  Int) {
         this.num_of_grade = num
+    }
+
+    fun setLevel(level: PuzzleLevels) {
+        this.LevelSet = level;
+    }
+
+    fun getLevel() : PuzzleLevels? {
+        return LevelSet
     }
 }
 

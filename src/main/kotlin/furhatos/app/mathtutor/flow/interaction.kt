@@ -119,11 +119,17 @@ val Practice: State = state(FallbackState) {
     onResponse<GradeNum> {
         var gradeNum = it.intent.gradeNum.toString().toInt()
         users.current.info.setGradeNum(gradeNum)
-        if (gradeNum >= 1 && gradeNum < 4) {
-            goto(SimpleQuestions)
+        if (gradeNum >= 1 && gradeNum < 3) {
+            users.current.info.setLevel(PuzzleLevels.easy)
+            goto(Questions)
         }
-        if (gradeNum >= 4 && gradeNum< 7) {
-            goto(HardQuestions)
+        if (gradeNum >= 3 && gradeNum < 5) {
+            users.current.info.setLevel(PuzzleLevels.medium)
+            goto(Questions)
+        }
+        if (gradeNum >= 5 && gradeNum< 7) {
+            users.current.info.setLevel(PuzzleLevels.hard)
+            goto(Questions)
         }
         else {
             furhat.say("Sorry, I only serve for math learning of primary level. I'm afraid I can not help you!")
@@ -150,19 +156,10 @@ val Explanations: State = state(FallbackState) {
     }
 }
 
-val SimpleQuestions: State = state(FallbackState){
+val Questions: State = state(FallbackState){
     onEntry {
-        furhat.ask("Great! I have prepared some puzzles of percentage within ten for you! Are you ready?")
-    }
-    onResponse<Yes> { goto(AskQuestions) }
-    onResponse<No> {
-        goto(WaitReady)
-    }
-}
-
-val HardQuestions: State = state(FallbackState){
-    onEntry {
-        furhat.ask("Great! I have prepared some puzzles of percentage within one hundred for you! Are you ready?")
+        val level = users.current.info.getLevel()
+        furhat.ask("Great! I have prepared some puzzles of ${level} level for you! Are you ready?")
     }
     onResponse<Yes> { goto(AskQuestions) }
     onResponse<No> {
