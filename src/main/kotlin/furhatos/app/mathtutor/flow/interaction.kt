@@ -192,7 +192,7 @@ var AskQuestion: State = state(FallbackState){
 
         val current_q = users.current.current_question
 
-        furhat.attend(users.current.id)
+        furhat.attendAll()
         furhat.ask(current_q.question)
 
     }
@@ -234,8 +234,7 @@ var AskQuestion: State = state(FallbackState){
             goto(AnswerCorrect)
         } else {
             furhat.attendAll()
-            current_q.incrementTries()
-            furhat.say("Well unfortunatly that is incorrect")
+            furhat.say("You said " + it.intent.getAnswer())
             //TODO Only go to the wrong question, if user has 2 times the question wrong. Else goto try again.
             goto(AnswerWrong)
         }
@@ -246,24 +245,30 @@ var AskQuestion: State = state(FallbackState){
 
 var AnswerWrong : State = state(FallbackState){
     onEntry {
-        furhat.attend(users.current.id)
+        furhat.attendAll()
         furhat.say(random(
-                "OOps, that is not the correct answer.",
                 "That is not the answer I was looking for",
-                "Nope, thats incorrect."
+                "No, thats incorrect."
         ))
 
         val current_q = users.current.current_question
         current_q.incrementTries()
 
+        print("Current tries = " + current_q.tries)
+
         if(current_q.tries > 3){
             goto(ExplainAnswer)
+        } else if (current_q.tries == 2) {
+            furhat.attendAll()
+            furhat.say("I can give you a hint.")
+            furhat.attendNobody()
+            furhat.say(users.current.current_question.hint)
+            furhat.attendAll()
         }
 
         furhat.say(random(
                 "I will give you one more try",
                 "You can do it! Try again",
-                "Remember, you need to divide two things and multiply with 100."
         )
         )
         goto(AskQuestion)
@@ -327,11 +332,11 @@ var Explaination : State = state(FallbackState){
 
 var UserFrustrated : State = state(FallbackState){
     onEntry {
-        furhat.attend(users.current.id)
+        furhat.attendAll()
         furhat.say("Hey relax, I am here to help you. Learning is a nice thing to do. ")
         furhat.attendNobody()
         furhat.say("I know it can be hard to solve these math problems")
-        furhat.attend(users.current.id)
+        furhat.attendAll()
         furhat.ask("Shall I help you to explain the previous question?")
     }
 
@@ -342,7 +347,6 @@ var UserFrustrated : State = state(FallbackState){
     onResponse<No> {
         goto(AskQuestion)
     }
-
 }
 
 var ExplainAnswer : State = state(FallbackState){
@@ -384,14 +388,14 @@ var ExplainAnswer : State = state(FallbackState){
 
 var EnoughExercisesEndState : State = state(FallbackState){
     onEntry {
-        furhat.attend(users.current.id)
+        furhat.attendAll()
         furhat.say("Welldone! I think "+UserStoppedEndState+ " exercises is enough for today.")
 
         var wrong_q = users.current.score.num_wrong_questions
         var correct_q = users.current.score.num_correct_questions
         furhat.attendNobody()
         furhat.say("I am proud of you. You had "+correct_q+" questions correct and "+wrong_q+" questions incorrect.")
-        furhat.attend(users.current.id)
+        furhat.attendAll()
 
         var userPoints : Number = users.current.score.points
         var score = "must "
@@ -407,7 +411,7 @@ var EnoughExercisesEndState : State = state(FallbackState){
         furhat.say ("I think you "+ score + " practise more." )
         furhat.attendNobody()
         furhat.say ("Hopefully you now have enough knowledge to solve percentage questions.")
-        furhat.attend(users.current.id)
+        furhat.attendAll()
 
     }
 }
@@ -418,7 +422,7 @@ var UserWantsToStopCheck : State = state(FallbackState){
         furhat.say("It will be much easier if you practise more!")
         furhat.say("We recommend to do at least 5 questions.")
 
-        furhat.attend(users.current.id)
+        furhat.attendAll()
         furhat.ask("Do you really want to stop?")
     }
 
@@ -436,7 +440,7 @@ var UserWantsToStopCheck : State = state(FallbackState){
 
 var UserStoppedEndState : State = state(FallbackState){
     onEntry {
-        furhat.attend(users.current.id)
+        furhat.attendAll()
         furhat.say("You can always can come back again. Gooedbye")
     }
 }

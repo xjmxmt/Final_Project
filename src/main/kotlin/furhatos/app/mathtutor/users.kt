@@ -104,6 +104,8 @@ class Question constructor(
             (this.total_num.toDouble() / 100.toDouble()).toInt() +
             ". Then multiply that with " + this.percentage
 
+    var hint : String = "You should divide two numbers and multiply it with 100."
+
     fun incrementTries(){
         this.tries = this.tries + 1
     }
