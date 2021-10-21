@@ -6,7 +6,13 @@ import furhatos.nlu.common.Number
 
 class Confused : Intent() {
     override fun getExamples(lang: Language): List<String> {
-        return listOf("Who are you?", "Where am I?", "What?", "What is this?", "What the hell is this?")
+        return listOf("Who are you?", "Where am I?", "What?", "What is this?", "What the hell is this?", "I don't know")
+    }
+}
+
+class OnePer : Intent() {
+    override fun getExamples(lang: Language): List<String> {
+        return listOf("one percent", "1%")
     }
 }
 
