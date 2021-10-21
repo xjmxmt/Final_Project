@@ -54,17 +54,16 @@ class Repeat : Intent() {
     }
 }
 
-class QuestionAnswer : Number()
 
-class Number (
-        val count : Number
+class QuestionAnswer (
+        val count : Number = Number(0)
 ) : Intent() {
     override fun getExamples(lang: Language): List<String> {
         return listOf("@count", "That is @count", "The answer is @count", "Its @count","1", "2", "3", "4", "5","6","7","8", "9", "10", "100", "200", "300", "400", "500", "1000", "10000")
     }
 
-    fun toText(): String {
-        return count.toString()
+    fun getAnswer(): Number {
+        return count
     }
 }
 

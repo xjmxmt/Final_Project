@@ -83,15 +83,17 @@ class CurrentUser {
 
 // -- Questions
 
+val score_initted = Score()
+
 val User.score : Score
-    get() = Score()
+    get() = score_initted
 
 class Question constructor(
         var total_num : Number,
         var percentage: Number
 ) {
-    val answer : Int = ((this.total_num.toDouble() / 100) * this.percentage.toDouble()).toInt()
-    var question : String = "What is " + this.total_num + " percentage " + this.percentage + "?" //TODO make nice sentence.
+    val answer : Number = ((this.total_num.toDouble() / 100) * this.percentage.toDouble()).toInt()
+    var question : String = "What is " + this.percentage + " percent of " + this.total_num + "?" //TODO make nice sentence.
     var tries : Int = 0
 
     var explaination : String = "The answer is " +
@@ -119,23 +121,32 @@ var questionsInnited = arrayOf(
 val User.questions : Array<Question>
     get() = questionsInnited
 
+val User.current_question : Question
+    get() = questions.get(score.getCurrentQuestionNumber())
+
 class Score{
 
     var points: Number = 10
-    var num_wrong_questions = 0
-    var num_correct_questions = 0
+    var num_wrong_questions : Int = 0
+    var num_correct_questions : Int = 0
 
-    val total_questions = this.num_correct_questions + this.num_wrong_questions
+    fun getCurrentQuestionNumber() : Int = this.num_correct_questions + this.num_wrong_questions
 
-    fun incorrectQuestion(){
+    fun correctAnswer() {
+        print("Correct answer")
+        this.num_correct_questions++
+    }
+    fun incorrectAnswer(){
         print("Before points: " + this.points)
         this.points =- 2
+        this.num_wrong_questions++
         print("After points: " + this.points)
     }
 
-    fun correctedWrongQuestion(){
+    fun correctedAnswer(){
         print("Before points: " + this.points)
         this.points =+ 1
+        this.num_wrong_questions++
         print("After points: " + this.points)
     }
 }

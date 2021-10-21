@@ -17,7 +17,10 @@ val Start: State = state(FallbackState) {
 
     onEntry {
         furhat.glance(users.current)
-        
+
+        furhat.say("Now goto ask question")
+        goto(AskQuestion);
+
         val location = Location(1.0, 1.0, 1.0)
         furhat.gesture(Gestures.BigSmile, async = false)
 
@@ -183,11 +186,11 @@ var QuestionConfused : State = state(FallbackState){
 var AskQuestion: State = state(FallbackState){
 
     onEntry {
-        val number_q = users.current.score.total_questions
         furhat.attendNobody()
-        furhat.say("Alright, this is question number " + number_q)
+        val number_q = users.current.score.getCurrentQuestionNumber()
+        furhat.say("Alright, this is question number " + (number_q + 1))
 
-        val current_q = users.current.questions.get(number_q)
+        val current_q = users.current.current_question
 
         furhat.attend(users.current.id)
         furhat.ask(current_q.question)
@@ -195,12 +198,12 @@ var AskQuestion: State = state(FallbackState){
     }
 
     onReentry {
-        furhat.say("Do you know what the answer is?")
+        furhat.attendAll()
+        furhat.ask("Do you know the answer?")
     }
 
     onResponse<Repeat> {
-        val number_q = users.current.score.total_questions
-        val current_q = users.current.questions.get(number_q)
+        val current_q = users.current.current_question
         furhat.attendNobody()
         furhat.say("The question was")
         furhat.attendAll()
@@ -212,17 +215,22 @@ var AskQuestion: State = state(FallbackState){
         furhat.say("Confused")
     }
 
+    onResponse<No> {
+        goto(ExplainAnswer)
+    }
+
     onResponse<QuestionAnswer>{
 
-        val number_q = users.current.score.total_questions
-        val current_q = users.current.questions.get(number_q)
+        val current_q = users.current.current_question
 
         print("The returned intent value was: " + it.intent)
         print("Value should be "+ current_q.answer)
-        var proposed_result = 10
-        if(proposed_result == current_q.answer ){
+
+        val answer = it.intent.getAnswer().value
+        print("This was the count: " + answer)
+
+        if(answer == current_q.answer){
             furhat.attendAll()
-            furhat.say("YES whoo. Well done thats correct!")
             goto(AnswerCorrect)
         } else {
             furhat.attendAll()
@@ -246,6 +254,7 @@ var AnswerWrong : State = state(FallbackState){
         ))
 
         furhat.say("I will give you one more try")
+        goto(AskQuestion)
     }
 }
 
@@ -258,16 +267,33 @@ var AnswerCorrect: State = state(FallbackState){
                 "Good Job",
                 "Perfect")
         )
+        users.current.score.correctAnswer()
         furhat.say("That is the correct answer.")
 
-
-        if(users.current.score.total_questions > 5){
+        if(users.current.score.getCurrentQuestionNumber() > 5){
             goto(EnoughExercisesEndState)
         }
 
-        furhat.attend(users.current.id)
-        furhat.ask("Do you want to do another one?")
+        furhat.attendAll()
 
+         val random = Math.random() * 2
+
+        print("Random value was " + random)
+
+        if(random > 1){
+            furhat.ask("Do you want to do another one?")
+        } else {
+            furhat.say("Lets continue to the next question.")
+        }
+        goto(AskQuestion)
+
+    }
+
+    onReentry {
+        furhat.attendNobody()
+        furhat.say("I recommend to do at least five in total")
+        furhat.attendAll()
+        furhat.ask("Do you want to do another question? ")
     }
 
     onResponse<No> {
@@ -309,8 +335,7 @@ var ExplainAnswer : State = state(FallbackState){
         furhat.attendAll()
         furhat.say("Oke, let me explain the question.")
         furhat.attendNobody()
-        val number_q = users.current.score.total_questions
-        val current_q = users.current.questions.get(number_q)
+        val current_q = users.current.current_question
 
         furhat.say(current_q.explaination)
 
@@ -322,8 +347,7 @@ var ExplainAnswer : State = state(FallbackState){
         furhat.attendAll()
         furhat.say("I know its hard right. Let me explain it again")
 
-        val number_q = users.current.score.total_questions
-        val current_q = users.current.questions.get(number_q)
+        val current_q = users.current.current_question
 
         furhat.attendNobody()
         furhat.say(current_q.explaination)
