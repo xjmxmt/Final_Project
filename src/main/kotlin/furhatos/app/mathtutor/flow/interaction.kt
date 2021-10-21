@@ -18,6 +18,8 @@ val Start: State = state(FallbackState) {
     onEntry {
         furhat.glance(users.current)
 
+        goto(AskQuestion)
+
         val location = Location(1.0, 1.0, 1.0)
         furhat.gesture(Gestures.BigSmile, async = false)
 

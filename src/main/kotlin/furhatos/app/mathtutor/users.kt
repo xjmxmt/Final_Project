@@ -159,7 +159,7 @@ var questionHard = arrayOf(
 // Hard
 
 val User.questions : Array<Question>
-    get() = questionsInnited
+    get() = questionHard
 
 val User.current_question : Question
     get() = questions.get(score.getCurrentQuestionNumber())
