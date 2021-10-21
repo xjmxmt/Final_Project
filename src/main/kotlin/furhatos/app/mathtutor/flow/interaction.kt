@@ -17,6 +17,7 @@ val Start: State = state(FallbackState) {
 
     onEntry {
         furhat.glance(users.current)
+
         val location = Location(1.0, 1.0, 1.0)
         furhat.gesture(Gestures.BigSmile, async = false)
 
@@ -154,7 +155,7 @@ val SimpleQuestions: State = state(FallbackState){
     onEntry {
         furhat.ask("Great! I have prepared some puzzles of percentage within ten for you! Are you ready?")
     }
-    onResponse<Yes> { goto(AskQuestions) }
+    onResponse<Yes> { goto(AskQuestion) }
     onResponse<No> {
         goto(WaitReady)
     }
@@ -164,7 +165,7 @@ val HardQuestions: State = state(FallbackState){
     onEntry {
         furhat.ask("Great! I have prepared some puzzles of percentage within one hundred for you! Are you ready?")
     }
-    onResponse<Yes> { goto(AskQuestions) }
+    onResponse<Yes> { goto(AskQuestion) }
     onResponse<No> {
         goto(WaitReady)
     }
@@ -175,12 +176,287 @@ val WaitReady: State = state(FallbackState){
         furhat.ask("Ok! Just tell me when you are ready!", timeout = waiting_time)
     }
     onResponse<Ready> {
-        goto(AskQuestions)
+        goto(AskQuestion)
     }
 }
 
-val AskQuestions: State = state(FallbackState){
+
+// Below from Ivo:
+
+var QuestionConfused : State = state(FallbackState){
+
     onEntry {
-        furhat.ask("Now, listen carefully, What's?")
+        furhat.say("Do you have ")
     }
 }
+
+/**
+ * Has no GOTO yet.
+ */
+var AskQuestion: State = state(FallbackState){
+
+    onEntry {
+        furhat.attendNobody()
+        val number_q = users.current.score.getCurrentQuestionNumber()
+        furhat.say("Alright, this is question number " + (number_q + 1))
+
+        val current_q = users.current.current_question
+
+        furhat.attendAll()
+        furhat.ask(current_q.question)
+
+    }
+
+    onReentry {
+        furhat.attendAll()
+        furhat.ask("Do you know the answer?")
+    }
+
+    onResponse<Repeat> {
+        val current_q = users.current.current_question
+        furhat.attendNobody()
+        furhat.say("The question was")
+        furhat.attendAll()
+        furhat.ask(current_q.question)
+        reentry()
+    }
+
+    onResponse<Confused> {
+        furhat.say("Confused")
+    }
+
+    onResponse<No> {
+        goto(ExplainAnswer)
+    }
+
+    onResponse<QuestionAnswer>{
+
+        val current_q = users.current.current_question
+
+        print("The returned intent value was: " + it.intent)
+        print("Value should be "+ current_q.answer)
+
+        val answer = it.intent.getAnswer().value
+        print("This was the count: " + answer)
+
+        if(answer == current_q.answer){
+            furhat.attendAll()
+            goto(AnswerCorrect)
+        } else {
+            furhat.attendAll()
+            furhat.say("You said " + it.intent.getAnswer())
+            //TODO Only go to the wrong question, if user has 2 times the question wrong. Else goto try again.
+            goto(AnswerWrong)
+        }
+
+    }
+
+}
+
+var AnswerWrong : State = state(FallbackState){
+    onEntry {
+        furhat.attendAll()
+        furhat.say(random(
+                "That is not the answer I was looking for",
+                "No, thats incorrect."
+        ))
+
+        val current_q = users.current.current_question
+        current_q.incrementTries()
+
+        print("Current tries = " + current_q.tries)
+
+        if(current_q.tries > 3){
+            goto(ExplainAnswer)
+        } else if (current_q.tries == 2) {
+            furhat.attendAll()
+            furhat.say("I can give you a hint.")
+            furhat.attendNobody()
+            furhat.say(users.current.current_question.hint)
+            furhat.attendAll()
+        }
+
+        furhat.say(random(
+                "I will give you one more try",
+                "You can do it! Try again"
+        )
+        )
+        goto(AskQuestion)
+    }
+}
+
+var AnswerCorrect: State = state(FallbackState){
+
+    onEntry {
+        furhat.attendNobody()
+        furhat.say(random(
+                "Exellent! ",
+                "Good Job",
+                "Perfect")
+        )
+        users.current.score.correctAnswer()
+        furhat.say("That is the correct answer.")
+
+
+        if(users.current.score.getCurrentQuestionNumber() >= 5){
+            furhat.say("You now have done " + users.current.score.getCurrentQuestionNumber() + " questions.")
+
+            goto(EnoughExercisesEndState)
+        }
+
+
+
+        furhat.attendAll()
+
+         val random = Math.random() * 2
+
+        if(random > 1){
+            furhat.ask("Do you want to do another one?")
+        } else {
+            furhat.say("Lets continue to the next question.")
+        }
+        goto(AskQuestion)
+
+    }
+
+    onReentry {
+        furhat.attendNobody()
+        furhat.say("I recommend to do at least five in total")
+        furhat.attendAll()
+        furhat.ask("Do you want to do another question? ")
+    }
+
+    onResponse<No> {
+        goto(UserWantsToStopCheck)
+    }
+
+    onResponse<Yes> {
+        goto(AskQuestion)
+    }
+
+}
+
+var Explaination : State = state(FallbackState){
+
+}
+
+var UserFrustrated : State = state(FallbackState){
+    onEntry {
+        furhat.attendAll()
+        furhat.say("Hey relax, I am here to help you. Learning is a nice thing to do. ")
+        furhat.attendNobody()
+        furhat.say("I know it can be hard to solve these math problems")
+        furhat.attendAll()
+        furhat.ask("Shall I help you to explain the previous question?")
+    }
+
+    onResponse<Yes> {
+        goto(ExplainAnswer)
+    }
+
+    onResponse<No> {
+        goto(AskQuestion)
+    }
+}
+
+var ExplainAnswer : State = state(FallbackState){
+    onEntry {
+
+        furhat.attendAll()
+        furhat.say("Let me explain the question.")
+        furhat.attendNobody()
+        val current_q = users.current.current_question
+
+        furhat.say(current_q.explaination)
+
+        furhat.attendAll()
+        furhat.ask("Do you understand it now?")
+    }
+
+    onResponse<No> {
+        furhat.attendAll()
+        furhat.say("I know its hard right. Let me explain it again")
+
+        val current_q = users.current.current_question
+
+        furhat.attendNobody()
+        furhat.say(current_q.explaination)
+
+
+        furhat.say("Alright, lets try the next question");
+        users.current.score.incorrectAnswer()
+        goto(AskQuestion)
+
+    }
+
+    onResponse<Yes> {
+        furhat.say("Oke lets try again with the next question!")
+
+        //TODO Repeat the question.
+        users.current.score.incorrectAnswer()
+        goto(AskQuestion)
+    }
+
+}
+
+var EnoughExercisesEndState : State = state(FallbackState){
+    onEntry {
+        furhat.attendAll()
+        furhat.say("Welldone! I think "+UserStoppedEndState+ " exercises is enough for today.")
+
+        var wrong_q = users.current.score.num_wrong_questions
+        var correct_q = users.current.score.num_correct_questions
+        furhat.attendNobody()
+        furhat.say("I am proud of you. You had "+correct_q+" questions correct and "+wrong_q+" questions incorrect.")
+        furhat.attendAll()
+
+        var userPoints : Number = users.current.score.points
+        var score = "must "
+
+        if(userPoints == 6 || userPoints == 7 ){
+            score = "should "
+        }
+
+        if (userPoints == 8 || userPoints == 9 || userPoints == 10){
+            score = "dont need "
+        }
+
+        furhat.say ("I think you "+ score + " practise more." )
+        furhat.attendNobody()
+        furhat.say ("Hopefully you now have enough knowledge to solve percentage questions.")
+        furhat.attendAll()
+        furhat.say("You can always come back and train more if you like to! Goodbye")
+
+    }
+}
+
+var UserWantsToStopCheck : State = state(FallbackState){
+    onEntry {
+        furhat.attendNobody()
+        furhat.say("It will be much easier if you practise more!")
+        furhat.say("We recommend to do at least 5 questions.")
+
+        furhat.attendAll()
+        furhat.ask("Do you really want to stop?")
+    }
+
+    onResponse<Yes> {
+        goto(UserStoppedEndState)
+    }
+
+    onResponse<No>{
+        furhat.gesture(Gestures.BigSmile, async = false)
+        furhat.say("Very well! I am proud, so lets continue practising")
+        goto(AskQuestion)
+    }
+
+}
+
+var UserStoppedEndState : State = state(FallbackState){
+    onEntry {
+        furhat.attendAll()
+        furhat.say("You can always can come back again. Goodbye")
+    }
+}
+
+// Above from Ivo:

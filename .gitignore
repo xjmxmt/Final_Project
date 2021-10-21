@@ -5,3 +5,5 @@ MathTutor/.idea/
 MathTutor/logs/
 logs/
 gradlew.bat
+Final_Project.iml
+.out/*
