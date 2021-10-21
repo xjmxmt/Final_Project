@@ -73,11 +73,26 @@ enum class AffectEnumAll {
     Pain, Peace, Pleasure, Sadness, Sensitivity, Suffering, Surprise, Sympathy, Yearning, Nothing
 }
 
+enum class PuzzleLevels {
+    easy,
+    medium,
+    hard
+}
+
 class CurrentUser {
     private var num_of_grade: Int = 0
+    private var LevelSet: PuzzleLevels = PuzzleLevels.medium
 
     fun setGradeNum(num:  Int) {
         this.num_of_grade = num
+    }
+
+    fun setLevel(level: PuzzleLevels) {
+        this.LevelSet = level;
+    }
+
+    fun getLevel() : PuzzleLevels {
+        return LevelSet
     }
 }
 
@@ -123,9 +138,9 @@ class PercentageOf constructor(val total_num_p  : Int, val percentage_p: Int) : 
 class WhatPercentage constructor(var total_num_p : Int, var given_number: Int): Question(total_num_p, ((given_number * 100).toDouble() / total_num_p).toInt()){
 
     override val answer : Number = this.percentage
-    override val question: String = "How much percent is " + given_number * this.percentage + " of " + total_num_p + "?"
+    override val question: String = "How much percent is " + given_number + " of " + total_num_p + "?"
     override val hint: String = "Percentage is total number divided by the given number, multiplied by 100. "
-    override val explaination: String get() = "Divide the total number by the given number and multiply by 100. This means " + this.total_num_p + "divided by " + this.given_number + " is " + this.percentage
+    override val explaination: String get() = "Divide the total number by the given number and multiply by 100. This means " + this.total_num_p + "divided by " + this.given_number + " is " + this.percentage + " percent"
 }
 
 // Easy
@@ -143,7 +158,7 @@ var questionsMedium = arrayOf(
         WhatPercentage(600, 200),
         PercentageOf(300, 60),
         WhatPercentage(400, 80),
-        WhatPercentage(800, 20)
+        WhatPercentage(800, 16)
 )
 
 // Hard
@@ -155,15 +170,6 @@ var questionHard = arrayOf(
         WhatPercentage(800, 20)
 
 )
-
-// Hard
-
-val User.questions : Array<Question>
-    get() = questionHard
-
-val User.current_question : Question
-    get() = questions.get(score.getCurrentQuestionNumber())
-
 
 class Score{
 
@@ -189,6 +195,16 @@ class Score{
         this.points =+ 1
         this.num_wrong_questions++
         print("After points: " + this.points)
+    }
+
+    fun getCurrentQuestion(level: PuzzleLevels) : Question {
+        if(level == PuzzleLevels.easy){
+            return questionsEasy.get(getCurrentQuestionNumber())
+        } else if(level == PuzzleLevels.medium){
+            return questionsMedium.get(getCurrentQuestionNumber())
+        }
+
+        return questionHard.get(getCurrentQuestionNumber())
     }
 }
 
