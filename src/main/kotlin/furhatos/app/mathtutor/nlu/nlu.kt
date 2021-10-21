@@ -41,3 +41,32 @@ class Ready: Intent(){
     }
 }
 
+class Repeat : Intent() {
+    override fun getExamples(lang: Language): List<String> {
+        return listOf(
+                "What was the question again?",
+                "Can you repeat?",
+                "repeat",
+                "question again",
+                "What was the question",
+                "Question?"
+        )
+    }
+}
+
+class QuestionAnswer : Number()
+
+class Number (
+        val count : Number
+) : Intent() {
+    override fun getExamples(lang: Language): List<String> {
+        return listOf("@count", "That is @count", "The answer is @count", "Its @count","1", "2", "3", "4", "5","6","7","8", "9", "10", "100", "200", "300", "400", "500", "1000", "10000")
+    }
+
+    fun toText(): String {
+        return count.toString()
+    }
+}
+
+
+
