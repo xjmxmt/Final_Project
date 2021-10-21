@@ -253,7 +253,19 @@ var AnswerWrong : State = state(FallbackState){
                 "Nope, thats incorrect."
         ))
 
-        furhat.say("I will give you one more try")
+        val current_q = users.current.current_question
+        current_q.incrementTries()
+
+        if(current_q.tries > 3){
+            goto(ExplainAnswer)
+        }
+
+        furhat.say(random(
+                "I will give you one more try",
+                "You can do it! Try again",
+                "Remember, you need to divide two things and multiply with 100."
+        )
+        )
         goto(AskQuestion)
     }
 }
@@ -270,15 +282,18 @@ var AnswerCorrect: State = state(FallbackState){
         users.current.score.correctAnswer()
         furhat.say("That is the correct answer.")
 
-        if(users.current.score.getCurrentQuestionNumber() > 5){
+
+        if(users.current.score.getCurrentQuestionNumber() >= 5){
+            furhat.say("You now have done " + users.current.score.getCurrentQuestionNumber() + " questions.")
+
             goto(EnoughExercisesEndState)
         }
+
+
 
         furhat.attendAll()
 
          val random = Math.random() * 2
-
-        print("Random value was " + random)
 
         if(random > 1){
             furhat.ask("Do you want to do another one?")
@@ -333,7 +348,7 @@ var UserFrustrated : State = state(FallbackState){
 var ExplainAnswer : State = state(FallbackState){
     onEntry {
         furhat.attendAll()
-        furhat.say("Oke, let me explain the question.")
+        furhat.say("Let me explain the question.")
         furhat.attendNobody()
         val current_q = users.current.current_question
 

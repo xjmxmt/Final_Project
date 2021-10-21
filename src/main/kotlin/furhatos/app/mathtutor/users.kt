@@ -100,9 +100,9 @@ class Question constructor(
             this.answer +
             ". You can calculate this by dividing first " +
             this.total_num + " by " +
-            this.percentage + ". That is " +
-            (this.total_num.toDouble() / this.percentage.toDouble()) +
-            ". Then multiply that with 100."
+            100 + ". That is " +
+            (this.total_num.toDouble() / 100.toDouble()).toInt() +
+            ". Then multiply that with " + this.percentage
 
     fun incrementTries(){
         this.tries = this.tries + 1
