@@ -98,7 +98,8 @@ val LearnIntro: State = state(FallbackState) {
         furhat.say("""Glad that you are here!""".trimIndent())
 
         furhat.attendNobody()
-        furhat.ask("Let's get started then! Would you like to have some practice on ... or learn about how to do ...?")
+        furhat.ask("Let's get started then! Would you like to learn about how to do " +
+                "percentage problems or have some practice on it?")
     }
 
     onResponse<Practice> {
@@ -134,7 +135,19 @@ val Practice: State = state(FallbackState) {
 val Explanations: State = state(FallbackState) {
     onEntry {
         furhat.attendAll()
-        furhat.say("You can do a percentage problem by...")
+        furhat.ask("Ok, let's sort this out together! I'll give a simple example here! " +
+                "Suppose that we have 100 apples, then what is the percentage of one apple?")
+    }
+    onResponse <Confused>{
+        furhat.say("Get together kid! The percentage of one apple out of 100 is 1%!")
+        furhat.say("And now suppose we have N apples, " +
+                "if we want to know the percentage of M apples out of N, " +
+                "We can simply divide M by N, and then multiply 100 to get the percentage.")
+    }
+    onResponse <OnePer>{
+        furhat.say("You got it! And now suppose we have N apples, " +
+                "if we want to know the percentage of M apples out of N, " +
+                "We can simply divide M by N, and then multiply 100 to get the percentage.")
     }
 }
 
