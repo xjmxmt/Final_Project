@@ -10,7 +10,7 @@ import furhatos.records.Location
 
 var waiting_time = 60000
 var num_reentry = 2
-//val client: SocketClient = SocketClient()
+val client: SocketClient = SocketClient()
 
 //intial state
 val Start: State = state(FallbackState) {
