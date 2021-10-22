@@ -19,7 +19,7 @@ last_user_action_idx = 0
 last_user_emotion_idx = 0
 
 
-@app.route('/emotion')
+@app.route('/affect')
 def return_action():
     print('This is running...')
 
