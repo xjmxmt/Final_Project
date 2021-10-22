@@ -120,11 +120,17 @@ val Practice: State = state(FallbackState) {
     onResponse<GradeNum> {
         var gradeNum = it.intent.gradeNum.toString().toInt()
         users.current.info.setGradeNum(gradeNum)
-        if (gradeNum >= 1 && gradeNum < 4) {
-            goto(SimpleQuestions)
+        if (gradeNum >= 1 && gradeNum < 3) {
+            users.current.info.setLevel(PuzzleLevels.easy)
+            goto(Questions)
         }
-        if (gradeNum >= 4 && gradeNum< 7) {
-            goto(HardQuestions)
+        if (gradeNum >= 3 && gradeNum < 5) {
+            users.current.info.setLevel(PuzzleLevels.medium)
+            goto(Questions)
+        }
+        if (gradeNum >= 5 && gradeNum< 7) {
+            users.current.info.setLevel(PuzzleLevels.hard)
+            goto(Questions)
         }
         else {
             furhat.say("Sorry, I only serve for math learning of primary level. I'm afraid I can not help you!")
@@ -161,9 +167,10 @@ val SimpleQuestions: State = state(FallbackState){
     }
 }
 
-val HardQuestions: State = state(FallbackState){
+val Questions: State = state(FallbackState){
     onEntry {
-        furhat.ask("Great! I have prepared some puzzles of percentage within one hundred for you! Are you ready?")
+        val level = users.current.info.getLevel()
+        furhat.ask("Great! I have prepared some puzzles of ${level} level for you! Are you ready?")
     }
     onResponse<Yes> { goto(AskQuestion) }
     onResponse<No> {
@@ -196,24 +203,36 @@ var QuestionConfused : State = state(FallbackState){
 var AskQuestion: State = state(FallbackState){
 
     onEntry {
-        furhat.attendNobody()
-        val number_q = users.current.score.getCurrentQuestionNumber()
-        furhat.say("Alright, this is question number " + (number_q + 1))
-
-        val current_q = users.current.current_question
-
         furhat.attendAll()
-        furhat.ask(current_q.question)
+        val number_q = users.current.score.getCurrentQuestionNumber()
+        val current_q = users.current.score.getCurrentQuestion()
+        val level_q = users.current.score.getCurrentLevel()
 
+        if(number_q > 5){
+            goto(EnoughExercisesEndState)
+        }
+
+        furhat.attendNobody()
+        if(current_q.tries == 0){
+
+            furhat.say("This is question number " + (number_q + 1))
+            furhat.say("Lets try a " + level_q + " question. ")
+        }
+
+        if(level_q === PuzzleLevels.hard){
+            furhat.say("I know its a hard question. You can do it!")
+        }
+
+        furhat.ask(current_q.question, 8000)
     }
 
     onReentry {
         furhat.attendAll()
-        furhat.ask("Do you know the answer?")
+        furhat.ask("What is the answer?")
     }
 
     onResponse<Repeat> {
-        val current_q = users.current.current_question
+        val current_q = users.current.score.getCurrentQuestion()
         furhat.attendNobody()
         furhat.say("The question was")
         furhat.attendAll()
@@ -222,7 +241,9 @@ var AskQuestion: State = state(FallbackState){
     }
 
     onResponse<Confused> {
-        furhat.say("Confused")
+        furhat.say("I will give you a hint")
+        furhat.say(users.current.score.getCurrentQuestion().hint)
+        reentry()
     }
 
     onResponse<No> {
@@ -231,13 +252,9 @@ var AskQuestion: State = state(FallbackState){
 
     onResponse<QuestionAnswer>{
 
-        val current_q = users.current.current_question
-
-        print("The returned intent value was: " + it.intent)
-        print("Value should be "+ current_q.answer)
+        val current_q = users.current.score.getCurrentQuestion()
 
         val answer = it.intent.getAnswer().value
-        print("This was the count: " + answer)
 
         if(answer == current_q.answer){
             furhat.attendAll()
@@ -259,18 +276,17 @@ var AnswerWrong : State = state(FallbackState){
                 "No, thats incorrect."
         ))
 
-        val current_q = users.current.current_question
+        val current_q = users.current.score.getCurrentQuestion()
         current_q.incrementTries()
-
-        print("Current tries = " + current_q.tries)
 
         if(current_q.tries > 3){
             goto(ExplainAnswer)
         } else if (current_q.tries == 2) {
             furhat.attendAll()
             furhat.say("I can give you a hint.")
+            val hint = users.current.score.getCurrentQuestion().hint
             furhat.attendNobody()
-            furhat.say(users.current.current_question.hint)
+            furhat.say(hint)
             furhat.attendAll()
         }
 
@@ -292,13 +308,18 @@ var AnswerCorrect: State = state(FallbackState){
                 "Good Job",
                 "Perfect")
         )
-        users.current.score.correctAnswer()
+
+        val current_q = users.current.score.getCurrentQuestion()
+
+        if(current_q.tries > 0){
+            users.current.score.correctedAnswer()
+        } else {
+            users.current.score.correctAnswer()
+        }
+
         furhat.say("That is the correct answer.")
 
-
         if(users.current.score.getCurrentQuestionNumber() >= 5){
-            furhat.say("You now have done " + users.current.score.getCurrentQuestionNumber() + " questions.")
-
             goto(EnoughExercisesEndState)
         }
 
@@ -362,9 +383,9 @@ var ExplainAnswer : State = state(FallbackState){
 
         furhat.attendAll()
         furhat.say("Let me explain the question.")
-        furhat.attendNobody()
-        val current_q = users.current.current_question
 
+        val current_q = users.current.score.getCurrentQuestion()
+        furhat.attendNobody()
         furhat.say(current_q.explaination)
 
         furhat.attendAll()
@@ -375,7 +396,7 @@ var ExplainAnswer : State = state(FallbackState){
         furhat.attendAll()
         furhat.say("I know its hard right. Let me explain it again")
 
-        val current_q = users.current.current_question
+        val current_q = users.current.score.getCurrentQuestion()
 
         furhat.attendNobody()
         furhat.say(current_q.explaination)
@@ -400,22 +421,22 @@ var ExplainAnswer : State = state(FallbackState){
 var EnoughExercisesEndState : State = state(FallbackState){
     onEntry {
         furhat.attendAll()
-        furhat.say("Welldone! I think "+UserStoppedEndState+ " exercises is enough for today.")
+        furhat.say("Welldone! I think "+ users.current.score.question_history.size + " exercises is enough for today.")
 
-        var wrong_q = users.current.score.num_wrong_questions
-        var correct_q = users.current.score.num_correct_questions
+        val wrong_q = users.current.score.num_wrong_questions
+        val correct_q = users.current.score.num_correct_questions
         furhat.attendNobody()
         furhat.say("I am proud of you. You had "+correct_q+" questions correct and "+wrong_q+" questions incorrect.")
         furhat.attendAll()
 
-        var userPoints : Number = users.current.score.points
+        val userPoints : Double = users.current.score.getScore()
         var score = "must "
 
-        if(userPoints == 6 || userPoints == 7 ){
+        if(userPoints > 1.0 ){
             score = "should "
         }
 
-        if (userPoints == 8 || userPoints == 9 || userPoints == 10){
+        if (userPoints >= 1.0){
             score = "dont need "
         }
 
