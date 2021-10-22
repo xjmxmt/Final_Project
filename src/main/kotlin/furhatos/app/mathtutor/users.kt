@@ -32,23 +32,20 @@ public class Affect {
         }
 
         val registeredEmotion = when(affection){
-            AffectEnumAll.Affection -> Annoyed()
-            AffectEnumAll.Anger -> Annoyed()
+
+            AffectEnumAll.Anger -> Angry()
+            AffectEnumAll.Sadness -> Angry()
+            AffectEnumAll.Pain -> Angry()
+
             AffectEnumAll.Annoyance -> Annoyed()
             AffectEnumAll.Aversion -> Annoyed()
             AffectEnumAll.Disquietment -> Annoyed()
             AffectEnumAll.Fatigue -> Annoyed()
-            AffectEnumAll.Pain -> Annoyed()
-            AffectEnumAll.Sadness -> Annoyed()
+
             AffectEnumAll.Sensitivity -> Annoyed()
 
-            AffectEnumAll.Disapproval -> Disaprove()
-            AffectEnumAll.Disconnection -> Disaprove()
-
-            AffectEnumAll.Anticipation -> Approve()
-            AffectEnumAll.Engagement -> Approve()
-            AffectEnumAll.Esteem -> Approve()
-            AffectEnumAll.Excitement -> Approve()
+            AffectEnumAll.Disapproval -> Annoyed()
+            AffectEnumAll.Disconnection -> Annoyed()
 
             AffectEnumAll.Suffering -> Doubt()
             AffectEnumAll.Doubt -> Doubt()
@@ -58,11 +55,16 @@ public class Affect {
             AffectEnumAll.Surprise -> Doubt()
             AffectEnumAll.Yearning -> Doubt()
 
-            AffectEnumAll.Happiness -> Happy()
-            AffectEnumAll.Peace -> Happy()
-            AffectEnumAll.Confidence -> Happy()
-            AffectEnumAll.Pleasure -> Happy()
-            AffectEnumAll.Sympathy -> Happy()
+            AffectEnumAll.Anticipation -> Positive()
+            AffectEnumAll.Engagement -> Positive()
+            AffectEnumAll.Esteem -> Positive()
+            AffectEnumAll.Excitement -> Positive()
+            AffectEnumAll.Affection -> Positive()
+            AffectEnumAll.Happiness ->Positive()
+            AffectEnumAll.Peace -> Positive()
+            AffectEnumAll.Confidence -> Positive()
+            AffectEnumAll.Pleasure -> Positive()
+            AffectEnumAll.Sympathy -> Positive()
 
             AffectEnumAll.Nothing -> Unknown()
         }
