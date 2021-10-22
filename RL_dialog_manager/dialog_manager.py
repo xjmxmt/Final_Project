@@ -1,133 +1,87 @@
-import numpy as np
+from flask import Flask, Response, request
 import torch
+import math
+import os
 import yaml
 import logging
-import copy
+from DQN import DQN
 from utils.base_config import BareConfig
-from configs.dialog_config import all_intents, all_slots
-from utils.functions import convert_list_to_dict
+from utils.functions import convert_user_action_to_idx, convert_user_emotion_to_idx, \
+    convert_agent_action_to_idx, convert_idx_to_user_action, convert_idx_to_agent_action, \
+    get_state_vector
 
 
-class StateTracker:
-    """
-    State tracker, infer about the state of the dialogue, given all the history up to that turn
-    """
+app = Flask(__name__)
 
-    def __init__(self):
+round_num = 0
+last_agent_action_idx = 0
+last_user_action_idx = 0
+last_user_emotion_idx = 0
 
-        self.round_num = 0
-        self.max_round_num = 10
-        self.history = []  # history actions
-        self.current_informs = {}
 
-        self.num_intents = len(all_intents)
-        self.num_slots = len(all_slots)
-        self.intents_dict = convert_list_to_dict(all_intents)
-        self.slots_dict = convert_list_to_dict(all_slots)
+@app.route('/emotion')
+def return_action():
+    print('This is running...')
 
-        self.none_state = np.zeros((self.get_state_size(), ))
+    # data is post in a form of round_num-last_user_action_idx-last_user_emotion_idx-last_agent_action_idx
+    data = request.args['data']
+    print('Request from client: ', data)
 
-        self.math_tutor = MathTutor()
+    global round_num
+    global last_user_action_idx
+    global last_user_emotion_idx
+    global last_agent_action_idx
+    round_num, user_action, user_emotion_idx, agent_action = data.split('-')
 
-    def get_state_size(self):
+    if round_num == 0:
+        # need to be modified later, the initial state
+        state_vector = get_state_vector(cfg, int(round_num), convert_user_action_to_idx(user_action),
+                                        int(user_emotion_idx),
+                                        convert_agent_action_to_idx(agent_action))
+    else:
+        print(f'info: {round_num}, {last_user_action_idx}, {last_user_emotion_idx}, {last_agent_action_idx}')
+        state_vector = get_state_vector(cfg, int(round_num), last_user_action_idx,
+                                        last_user_emotion_idx, last_agent_action_idx)
 
-        return 2 * self.num_intents + 5 * self.num_slots + 1 + self.max_round_num
+    last_user_action_idx = convert_user_action_to_idx(user_action)
+    last_user_emotion_idx = int(user_emotion_idx)
+    last_agent_action_idx = convert_agent_action_to_idx(agent_action)
 
-    def print_history(self):
+    action_logits = dqn(state_vector)
+    action_idx = torch.argmax(action_logits)
+    action = convert_idx_to_agent_action(action_idx)
 
-        for action in self.history:
-            print('printing history...')
-            print(action)
-
-    def get_state(self, done=False):
-
-        # if done then return none state which is a state filled with zeros
-        if done:
-            return self.none_state
-
-        user_action = self.history[-1]
-        last_agent_action = self.history[-2] if len(self.history) > 1 else None
-
-        # one-hot vector of intents
-        user_action_vector = np.zeros((self.num_intents, ))
-        user_action_vector[self.intents_dict[user_action['inform']]] = 1.0
-
-        # bag of inform slots to represent user action
-        user_inform_slot_vector = np.zeros((self.num_slots, ))
-        for key in user_action['inform_slots'].keys():
-            user_inform_slot_vector[self.slots_dict[key]] = 1.0
-
-        # bag of request slots to represent user action
-        user_request_slot_vector = np.zeros((self.num_slots, ))
-        for key in user_action['request_slots'].keys():
-            user_request_slot_vector[self.slots_dict[key]] = 1.0
-
-        # bag of filled_in slots
-        current_slot_vector = np.zeros((self.num_slots, ))
-        for key in self.current_informs:
-            current_slot_vector[self.slots_dict[key]] = 1.0
-
-        # one-hot vector of last agent intent
-        agent_action_vector = np.zeros((self.num_intents,))
-        if last_agent_action:
-            agent_action_vector[self.intents_dict[last_agent_action['intent']]] = 1.0
-
-        # one-hot vector of last agent inform slots
-        agent_inform_slot_vector = np.zeros((self.num_slots,))
-        if last_agent_action:
-            for key in last_agent_action['inform_slots'].keys():
-                agent_inform_slot_vector[self.slots_dict[key]] = 1.0
-
-        # one-hot vector of last agent request slots
-        agent_request_slot_vector = np.zeros((self.num_slots,))
-        if last_agent_action:
-            for key in last_agent_action['request_slots'].keys():
-                agent_request_slot_vector[self.slots_dict[key]] = 1.0
-
-        # ???
-        # value representation of the round num
-        turn_vector = np.zeros((1,)) + self.round_num / 5.
-
-        # one-hot vector of the round num
-        turn_onehot_vector = np.zeros((self.max_round_num,))
-        turn_onehot_vector[self.round_num - 1] = 1.0
-
-        state_representation = np.hstack(
-            [user_action_vector, user_inform_slot_vector, user_request_slot_vector, current_slot_vector, agent_action_vector,
-             agent_inform_slot_vector, agent_request_slot_vector, turn_vector, turn_onehot_vector]).flatten()
-
-        return state_representation
-
-    def update_state_agent(self, agent_action):
-
-        pass
-
-    def update_state_user(self):
-
-        pass
+    return Response(action)
 
 
 if __name__ == '__main__':
 
     config_path = 'configs/experiment.yaml'
+
     with open(config_path) as file:
         cfg = BareConfig()
         yaml_data = yaml.load(file, Loader=yaml.FullLoader)
         cfg.merge_yaml(yaml_data)
 
     logging.basicConfig(
-        filename=cfg.log_path,
+        filename=cfg.dqn_log_path,
         filemode='a+',
         level=logging.INFO,
         format='%(levelname)s: %(message)s'
     )
 
-    if cfg.cuda:
-        device = torch.device('cuda')
-    else:
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    logging.info(f'Using device {device}')
+    num_state = int(math.log(cfg.max_rounds, 2)) + cfg.num_user_action + cfg.action_shape + cfg.num_emotion
 
+    dqn = DQN(
+        num_state,
+        cfg.action_shape,
+        hidden_shape=cfg.hidden_shape
+    )
+    device = torch.device('cpu')
+    dqn.load_state_dict(torch.load(os.path.join(cfg.dir_checkpoint, f'saved_weights.pth'),
+                                   map_location=device))
 
-    num_actions = 5
-    hidden_size = 80
+    HOST = '127.0.0.1'
+    PORT = 5000
+    app.run(host=HOST, port=PORT, debug=True)
+
