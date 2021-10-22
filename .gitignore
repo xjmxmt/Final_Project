@@ -7,3 +7,7 @@ logs/
 gradlew.bat
 Final_Project.iml
 .out/*
+
+agent/__pycache__/*
+agent/.idea/*
+agent/data/*
