@@ -5,11 +5,13 @@ import java.io.*;
 
 public class SocketClient {
 
-    public String callServer() {
+    public String callServer(int round_num, String user_action, int emotion_level, String agent_action) {
 
         try {
 
-            URL url = new URL("http://127.0.0.1:5000/emotion?data=HelloPython");
+            String url_str = String.format("http://127.0.0.1:5000/emotion?data=%d-%s-%d-%s",
+                    round_num, user_action, emotion_level, agent_action);
+            URL url = new URL(url_str);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Accept", "application/json");

@@ -12,6 +12,7 @@ class BareConfig:
         self.cuda = True
         self.shuffle = True
         self.gamma = 0.999
+        self.dir_checkpoint = 'checkpoints'
 
         # Model setting
         self.use_usersim = True
@@ -47,6 +48,8 @@ class BareConfig:
             self.shuffle = cfg['shuffle']
         if 'gamma' in cfg:
             self.gamma = cfg['gamma']
+        if 'dir_checkpoint' in cfg:
+            self.dir_checkpoint = cfg['dir_checkpoint']
 
         if 'use_usersim' in cfg:
             self.use_usersim = cfg['use_usersim']

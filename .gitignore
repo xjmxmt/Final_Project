@@ -7,7 +7,9 @@ logs/
 gradlew.bat
 Final_Project.iml
 .out/*
+out/*
 
-agent/__pycache__/*
-agent/.idea/*
-agent/data/*
+RL_dialog_manager/__pycache__/*
+RL_dialog_manager/.idea/*
+RL_dialog_manager/data/*
+RL_dialog_manager/utils/__pycache__/*

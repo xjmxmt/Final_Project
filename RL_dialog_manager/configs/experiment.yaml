@@ -8,6 +8,7 @@ load: False
 cuda: True
 shuffle: True
 gamma: 0.999
+dir_checkpoint: 'checkpoints'
 
 # Model setting
 use_usersim: True

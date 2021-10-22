@@ -195,7 +195,7 @@ if __name__ == '__main__':
         format='%(levelname)s: %(message)s'
     )
 
-    num_state = int(math.log(cfg.max_rounds, 2)) + cfg.num_user_action * 2 + cfg.action_shape * 2
+    num_state = int(math.log(cfg.max_rounds, 2)) + cfg.num_user_action + cfg.action_shape + cfg.num_emotion
 
     trainer = DQNTrainer(
         batch_size=cfg.batch_size,
@@ -211,3 +211,7 @@ if __name__ == '__main__':
     )
 
     trainer.train_net()
+    torch.save(trainer.target_network.state_dict(),
+               os.path.join(cfg.dir_checkpoint, f'saved_weights.pth'))
+    logging.info(f'Checkpoint saved !')
+

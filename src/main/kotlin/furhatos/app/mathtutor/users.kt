@@ -17,7 +17,7 @@ public class Affect {
     public fun getAffect() : Event {
         var emotion  = ""
         try{
-            emotion = client.callServer()
+            emotion = client.callServer(0, "proceed", 1, "gaze")
         }catch (e: RuntimeException){
             print("Could not fetch emotion. Is the server online? ")
             println(e);
