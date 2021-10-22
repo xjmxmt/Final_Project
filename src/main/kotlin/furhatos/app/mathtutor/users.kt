@@ -88,7 +88,7 @@ val User.emotion : Emotion
 public class Emotion {
     val client = DialogManagerClient()
 
-    fun getEmotion(round_num : Int, user_action : String, user_emotion_idx : Int, agent_action : String) : Gesture {
+    fun getAction(round_num : Int, user_action : String, user_emotion_idx : Int, agent_action : String) : Gesture {
         print("RUNNING THE DIALOG MANAGER IN THE CLIENT!")
         var raw_action = ""
         try{

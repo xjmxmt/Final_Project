@@ -31,7 +31,7 @@ val Start: State = state(FallbackState) {
     onEntry {
         furhat.glance(users.current)
         val location = Location(1.0, 1.0, 1.0)
-        furhat.gesture(users.current.emotion.getEmotion(round_num, user_action, user_emotion_idx, agent_action))  // agent's initial action is smile
+        furhat.gesture(users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action))  // agent's initial action is smile
 
         val user_emotion = users.current.affect
 
@@ -55,7 +55,7 @@ val Start: State = state(FallbackState) {
 
     onEvent<Doubt>{
         furhat.attendAll()
-        furhat.gesture(users.current.emotion.getEmotion(round_num, user_action, user_emotion_idx, agent_action))
+        furhat.gesture(users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action))
         furhat.say("Do i continue after this?")
 
         goto(StartDoubt)
@@ -63,14 +63,14 @@ val Start: State = state(FallbackState) {
 
     onResponse<Confused> {
         furhat.attendAll()
-        furhat.gesture((users.current.emotion.getEmotion(round_num, user_action, user_emotion_idx, agent_action)))
+        furhat.gesture((users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)))
 
         goto(MTIntro)
     }
 
     onResponse<Learn> {
         furhat.attendAll()
-        furhat.gesture((users.current.emotion.getEmotion(round_num, user_action, user_emotion_idx, agent_action)))
+        furhat.gesture((users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)))
 
 
         goto(LearnIntro)
@@ -81,7 +81,7 @@ val Start: State = state(FallbackState) {
 val StartDoubt: State = state(FallbackState){
     onEntry {
         furhat.attendAll()
-        furhat.gesture((users.current.emotion.getEmotion(round_num, user_action, user_emotion_idx, agent_action)))
+        furhat.gesture((users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)))
         furhat.say ("Hi there, you look a bit in doubt.")
 
         furhat.attend(users.random)
@@ -93,19 +93,19 @@ val StartDoubt: State = state(FallbackState){
 
     onReentry {
         furhat.attendAll()
-        furhat.gesture((users.current.emotion.getEmotion(round_num, user_action, user_emotion_idx, agent_action)))
+        furhat.gesture((users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)))
         goto(Start)
     }
 
     onResponse<Yes>{
         furhat.attendAll()
-    furhat.gesture((users.current.emotion.getEmotion(round_num, user_action, user_emotion_idx, agent_action)))
+    furhat.gesture((users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)))
         goto(MTIntro)
     }
 
     onResponse<No> {
         furhat.attendAll()
-        furhat.gesture((users.current.emotion.getEmotion(round_num, user_action, user_emotion_idx, agent_action)))
+        furhat.gesture((users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)))
         furhat.say("That's sad.")
         goto(Start)
     }
@@ -116,7 +116,7 @@ val MTIntro = state(FallbackState) {
     onEntry {
         furhat.attendAll()
         furhat.say("""I'm your personal math tutor, Mr. MT!""")
-        furhat.gesture((users.current.emotion.getEmotion(round_num, user_action, user_emotion_idx, agent_action)))
+        furhat.gesture((users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)))
         furhat.attendNobody()
         furhat.say("""I can help you with your math problems.""".trimIndent())
 
@@ -135,7 +135,7 @@ val LearnIntro: State = state(FallbackState) {
         furhat.attendAll()
         furhat.say("""Glad that you are here!""".trimIndent())
 
-        furhat.gesture((users.current.emotion.getEmotion(round_num, user_action, user_emotion_idx, agent_action)))
+        furhat.gesture((users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)))
         furhat.attendNobody()
         furhat.ask("Let's get started then! Would you like to learn about how to do " +
                 "percentage problems or have some practice on it?")
@@ -143,13 +143,13 @@ val LearnIntro: State = state(FallbackState) {
 
     onResponse<Practice> {
         furhat.attendAll()
-        furhat.gesture((users.current.emotion.getEmotion(round_num, user_action, user_emotion_idx, agent_action)))
+        furhat.gesture((users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)))
         goto(Practice)
     }
 
     onResponse<Explanations> {
         furhat.attendAll()
-        furhat.gesture((users.current.emotion.getEmotion(round_num, user_action, user_emotion_idx, agent_action)))
+        furhat.gesture((users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)))
         goto(Explanations)
     }
 }
@@ -224,7 +224,7 @@ val Questions: State = state(FallbackState){
 val WaitReady: State = state(FallbackState){
     onEntry {
         furhat.attendAll()
-        furhat.gesture((users.current.emotion.getEmotion(round_num, user_action, user_emotion_idx, agent_action)))
+        furhat.gesture((users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)))
         furhat.ask("Ok! Just tell me when you are ready!", timeout = waiting_time)
     }
     onResponse<Ready> {
@@ -250,7 +250,7 @@ var AskQuestion: State = state(FallbackState){
     onEntry {
 
         furhat.attendAll()
-        furhat.gesture((users.current.emotion.getEmotion(round_num, user_action, user_emotion_idx, agent_action)), async = false)
+        furhat.gesture((users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)), async = false)
         val number_q = users.current.score.getCurrentQuestionNumber()
         val current_q = users.current.score.getCurrentQuestion()
         val level_q = users.current.score.getCurrentLevel()
@@ -262,7 +262,7 @@ var AskQuestion: State = state(FallbackState){
         furhat.attendNobody()
         if(current_q.tries == 0){
             furhat.attendAll()
-            furhat.gesture((users.current.emotion.getEmotion(round_num, user_action, user_emotion_idx, agent_action)), async = false)
+            furhat.gesture((users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)), async = false)
             furhat.say("This is question number " + (number_q + 1))
             furhat.say("Lets try a " + level_q + " question. ")
         }
@@ -281,7 +281,7 @@ var AskQuestion: State = state(FallbackState){
 
     onResponse<Repeat> {
         furhat.attendAll()
-        furhat.gesture((users.current.emotion.getEmotion(round_num, user_action, user_emotion_idx, agent_action)), async = false)
+        furhat.gesture((users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)), async = false)
         val current_q = users.current.score.getCurrentQuestion()
         furhat.attendNobody()
         furhat.say("The question was")
@@ -302,7 +302,7 @@ var AskQuestion: State = state(FallbackState){
 
     onResponse<QuestionAnswer>{
         furhat.attendAll()
-        furhat.gesture((users.current.emotion.getEmotion(round_num, user_action, user_emotion_idx, agent_action)), async = false)
+        furhat.gesture((users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)), async = false)
         val current_q = users.current.score.getCurrentQuestion()
 
         val answer = it.intent.getAnswer().value
@@ -326,7 +326,7 @@ var AnswerWrong : State = state(FallbackState){
                 "That is not the answer I was looking for",
                 "No, thats incorrect."
         ))
-        furhat.gesture((users.current.emotion.getEmotion(round_num, user_action, user_emotion_idx, agent_action)), async = false)
+        furhat.gesture((users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)), async = false)
         val current_q = users.current.score.getCurrentQuestion()
         current_q.incrementTries()
 
@@ -360,7 +360,7 @@ var AnswerCorrect: State = state(FallbackState){
                 "Perfect")
         )
         furhat.attendAll()
-        furhat.gesture((users.current.emotion.getEmotion(round_num, user_action, user_emotion_idx, agent_action)), async = false)
+        furhat.gesture((users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)), async = false)
         val current_q = users.current.score.getCurrentQuestion()
 
         if(current_q.tries > 0){
@@ -396,19 +396,19 @@ var AnswerCorrect: State = state(FallbackState){
 
         furhat.say("I recommend to do at least five in total")
         furhat.attendAll()
-        furhat.gesture((users.current.emotion.getEmotion(round_num, user_action, user_emotion_idx, agent_action)), async = false)
+        furhat.gesture((users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)), async = false)
         furhat.ask("Do you want to do another question? ")
     }
 
     onResponse<No> {
         furhat.attendAll()
-        furhat.gesture((users.current.emotion.getEmotion(round_num, user_action, user_emotion_idx, agent_action)), async = false)
+        furhat.gesture((users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)), async = false)
         goto(UserWantsToStopCheck)
     }
 
     onResponse<Yes> {
         furhat.attendAll()
-        furhat.gesture((users.current.emotion.getEmotion(round_num, user_action, user_emotion_idx, agent_action)), async = false)
+        furhat.gesture((users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)), async = false)
         goto(AskQuestion)
     }
 
@@ -427,18 +427,18 @@ var UserFrustrated : State = state(FallbackState){
         furhat.attendAll()
         furhat.ask("Shall I help you to explain the previous question?")
         furhat.attendAll()
-        furhat.gesture((users.current.emotion.getEmotion(round_num, user_action, user_emotion_idx, agent_action)), async = false)
+        furhat.gesture((users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)), async = false)
     }
 
     onResponse<Yes> {
         furhat.attendAll()
-        furhat.gesture((users.current.emotion.getEmotion(round_num, user_action, user_emotion_idx, agent_action)), async = false)
+        furhat.gesture((users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)), async = false)
         goto(ExplainAnswer)
     }
 
     onResponse<No> {
         furhat.attendAll()
-        furhat.gesture((users.current.emotion.getEmotion(round_num, user_action, user_emotion_idx, agent_action)), async = false)
+        furhat.gesture((users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)), async = false)
         goto(AskQuestion)
     }
 }
@@ -521,7 +521,7 @@ var UserWantsToStopCheck : State = state(FallbackState){
         furhat.say("We recommend to do at least 5 questions.")
 
         furhat.attendAll()
-        furhat.gesture((users.current.emotion.getEmotion(round_num, user_action, user_emotion_idx, agent_action)), async = false)
+        furhat.gesture((users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)), async = false)
         furhat.ask("Do you really want to stop?")
     }
 
@@ -540,7 +540,7 @@ var UserWantsToStopCheck : State = state(FallbackState){
 var UserStoppedEndState : State = state(FallbackState){
     onEntry {
         furhat.attendAll()
-        furhat.gesture((users.current.emotion.getEmotion(round_num, user_action, user_emotion_idx, agent_action)), async = false)
+        furhat.gesture((users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)), async = false)
         furhat.say("You can always can come back again. Goodbye")
     }
 }
