@@ -10,7 +10,21 @@ import furhatos.records.Location
 
 var waiting_time = 60000
 var num_reentry = 2
-//val client: SocketClient = SocketClient()
+val client: SocketClient = SocketClient()
+val dialog_manager: DialogManagerClient = DialogManagerClient()
+
+// same meaning as turn: [agent speaking, user speaking]
+// remember to += 1 after each turn
+var round_num = 0
+
+// all possible user actions: 'proceed', 'silence', 'end_dialog'
+var user_action = "proceed"
+
+// has 4 levels
+var user_emotion_idx = 0
+
+// all possible agent actions: 'goto_next_state', 'smile', 'gaze', 'look_away', 'goto_encourage_state', 'say_again'
+var agent_action = "smile"
 
 //intial state
 val Start: State = state(FallbackState) {
@@ -19,31 +33,82 @@ val Start: State = state(FallbackState) {
         furhat.glance(users.current)
 
         val location = Location(1.0, 1.0, 1.0)
-        furhat.gesture(Gestures.BigSmile, async = false)
+        furhat.gesture(Gestures.BigSmile, async = false)  // agent's initial action is smile
 
-//        val user_emotion = users.current.emotion
+        val user_emotion = users.current.emotion
 
-//        print("Showing emotion: " + user_emotion)
-//
-//        raise(user_emotion)
+        print("Showing emotion: " + user_emotion)
+
+        raise(user_emotion)
         furhat.glance(location)
-        furhat.ask("Hello! How can I help you? ")
+        furhat.ask("Hello! How can I help you?")
+
+
     }
+
     onReentry {
         if (reentryCount > num_reentry) goto(MTIntro)
 //        raise(users.current.emotion)
         furhat.ask("Hello! How can i help you?")
     }
 
+
+
+
     onEvent<Doubt>{
+
+        val action = dialog_manager.callServer(round_num, user_action, user_emotion_idx, agent_action)
+
+        if (action == "smile") {
+            // smile
+        } else if (action == "gaze") {
+            // gaze
+        } else if (action == "look away") {
+            // look away
+        } else if (action == "goto_encourage_state") {
+            furhat.say("I know it can be hard to solve these math problems")
+        } else if (action == "say_again") {
+            reentry()
+        }
+
         goto(StartDoubt)
     }
 
     onResponse<Confused> {
+
+        val action = dialog_manager.callServer(round_num, user_action, user_emotion_idx, agent_action)
+
+        if (action == "smile") {
+            // smile
+        } else if (action == "gaze") {
+            // gaze
+        } else if (action == "look away") {
+            // look away
+        } else if (action == "goto_encourage_state") {
+            furhat.say("I know it can be hard to solve these math problems")
+        } else if (action == "say_again") {
+            reentry()
+        }
+
         goto(MTIntro)
     }
 
     onResponse<Learn> {
+
+        val action = dialog_manager.callServer(round_num, user_action, user_emotion_idx, agent_action)
+
+        if (action == "smile") {
+            // smile
+        } else if (action == "gaze") {
+            // gaze
+        } else if (action == "look away") {
+            // look away
+        } else if (action == "goto_encourage_state") {
+            furhat.say("I know it can be hard to solve these math problems")
+        } else if (action == "say_again") {
+            reentry()
+        }
+
         goto(LearnIntro)
     }
 }
@@ -52,7 +117,7 @@ val Start: State = state(FallbackState) {
 val StartDoubt: State = state(FallbackState){
     onEntry {
         furhat.glance(users.current.id, duration = 1)
-        furhat.say ("Hi there, you look a bit in doubt." )
+        furhat.say ("Hi there, you look a bit in doubt.")
 
         furhat.attend(users.random)
         furhat.gesture(

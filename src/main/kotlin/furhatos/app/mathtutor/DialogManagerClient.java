@@ -1,19 +1,17 @@
 package furhatos.app.mathtutor;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.*;
+import java.io.*;
 
-public class SocketClient {
+public class DialogManagerClient {
 
-    public String callServer() {
+    public String callServer(int round_num, String user_action, int emotion_level, String agent_action) {
 
         try {
 
-            URL url = new URL("http://127.0.0.1:6000/emotion?data=HelloPython");
+            String url_str = String.format("http://127.0.0.1:5000/emotion?data=%d-%s-%d-%s",
+                    round_num, user_action, emotion_level, agent_action);
+            URL url = new URL(url_str);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Accept", "application/json");
