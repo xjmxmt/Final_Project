@@ -10,7 +10,8 @@ import furhatos.records.Location
 
 var waiting_time = 60000
 var num_reentry = 2
-//val client: SocketClient = SocketClient()
+
+// Annoyed,
 
 //intial state
 val Start: State = state(FallbackState) {
@@ -21,22 +22,18 @@ val Start: State = state(FallbackState) {
         val location = Location(1.0, 1.0, 1.0)
         furhat.gesture(Gestures.BigSmile, async = false)
 
-//        val user_emotion = users.current.emotion
 
-//        print("Showing emotion: " + user_emotion)
-//
-//        raise(user_emotion)
         furhat.glance(location)
         furhat.ask("Hello! How can I help you? ")
     }
     onReentry {
         if (reentryCount > num_reentry) goto(MTIntro)
-//        raise(users.current.emotion)
+        raise(users.current.emotion)
         furhat.ask("Hello! How can i help you?")
     }
 
     onEvent<Doubt>{
-        goto(StartDoubt)
+        goto(MTIntro)
     }
 
     onResponse<Confused> {
@@ -45,6 +42,15 @@ val Start: State = state(FallbackState) {
 
     onResponse<Learn> {
         goto(LearnIntro)
+    }
+
+
+    onResponse<Practice> {
+        goto(Practice)
+    }
+
+    onResponse<Explanations> {
+        goto(Explanations)
     }
 }
 
@@ -77,30 +83,37 @@ val StartDoubt: State = state(FallbackState){
 val MTIntro = state(FallbackState) {
     onEntry {
         furhat.attendAll()
-        furhat.say("""I'm your personal math tutor, Mr. MT!""")
+        furhat.say("""I'm your personal math tutor, Mr. M T !""")
 
         furhat.attendNobody()
         furhat.say("""I can help you with your math problems.""".trimIndent())
 
         furhat.attendAll()
-        furhat.ask("Would you like to learn some math now?")
+        furhat.ask("Would you like to learn some math?")
     }
 
     onResponse<Yes> { goto(LearnIntro) }
 
-    onResponse<No> { goto(Start) }
+    onResponse<No> {
+        furhat.say("Oke then, goodbye.")
+        goto(Start) }
 }
 
 //when the user wants to learn
 val LearnIntro: State = state(FallbackState) {
     onEntry {
-        furhat.attendAll()
+        furhat.attendNobody()
         furhat.say("""Glad that you are here!""".trimIndent())
 
-        furhat.attendNobody()
-        furhat.ask("Let's get started then! Would you like to learn about how to do " +
-                "percentage problems or have some practice on it?")
+        furhat.attendAll()
+        furhat.ask("Let's get started then! Would you like to practice some math questions or do you want some explanations?")
     }
+
+    onReentry {
+        furhat.attendAll()
+        furhat.ask("Would you like to practise or get some explanation?")
+    }
+
 
     onResponse<Practice> {
         goto(Practice)
@@ -133,16 +146,27 @@ val Practice: State = state(FallbackState) {
             goto(Questions)
         }
         else {
+            furhat.attendNobody()
             furhat.say("Sorry, I only serve for math learning of primary level. I'm afraid I can not help you!")
+            furhat.attendAll()
+            users.current.score.current_level.add(PuzzleLevels.hard)
+            users.current.score.initHardQuestion()
+            furhat.say("But we can try to do the hardest questions")
+            goto(AskQuestion)
         }
     }
 }
 
 val Explanations: State = state(FallbackState) {
     onEntry {
+        furhat.attendNobody()
+        furhat.say("Ok, let's sort this out together!")
         furhat.attendAll()
-        furhat.ask("Ok, let's sort this out together! I'll give a simple example here! " +
-                "Suppose that we have 100 apples, then what is the percentage of one apple?")
+        furhat.say(" I'll give a simple example here! ")
+        furhat.attendNobody()
+        furhat.say("Suppose that we have 100 apples")
+        furhat.attendAll()
+        furhat.ask("then what is the percentage of one apple?")
     }
     onResponse <Confused>{
         furhat.say("Get together kid! The percentage of one apple out of 100 is 1%!")
@@ -178,6 +202,7 @@ val Questions: State = state(FallbackState){
     }
 }
 
+
 val WaitReady: State = state(FallbackState){
     onEntry {
         furhat.ask("Ok! Just tell me when you are ready!", timeout = waiting_time)
@@ -193,7 +218,44 @@ val WaitReady: State = state(FallbackState){
 var QuestionConfused : State = state(FallbackState){
 
     onEntry {
-        furhat.say("Do you have ")
+        furhat.attendAll()
+        val current_q = users.current.score.getCurrentQuestion()
+        furhat.attendNobody()
+        furhat.say("Let me repeat the question and add a hint.")
+        furhat.attendAll()
+        furhat.say(current_q.question)
+        furhat.attendNobody()
+        furhat.say(current_q.hint)
+        furhat.attendAll()
+        furhat.say("I hope that helped!")
+
+        goto(AskQuestion)
+    }
+
+}
+
+var QuestionDoubt : State = state(FallbackState){
+    onEntry {
+        users.current.score.getCurrentQuestion().skip_intro = true
+        print("Registered Doubt")
+        furhat.attendNobody()
+        furhat.say("I see you are a bit in doubt. ")
+        furhat.attendAll()
+        furhat.ask("Shall I help you with the question?")
+
+    }
+
+    onReentry {
+        goto(AskQuestion)
+    }
+
+    onResponse<Yes> {
+        goto(QuestionConfused)
+    }
+
+    onResponse<No> {
+        furhat.say("Alright, you can do it!")
+        goto(AskQuestion)
     }
 }
 
@@ -213,7 +275,7 @@ var AskQuestion: State = state(FallbackState){
         }
 
         furhat.attendNobody()
-        if(current_q.tries == 0){
+        if(current_q.tries == 0 || !current_q.skip_intro){
 
             furhat.say("This is question number " + (number_q + 1))
             furhat.say("Lets try a " + level_q + " question. ")
@@ -223,13 +285,42 @@ var AskQuestion: State = state(FallbackState){
             furhat.say("I know its a hard question. You can do it!")
         }
 
+        furhat.attendAll()
         furhat.ask(current_q.question, 8000)
     }
 
     onReentry {
         furhat.attendAll()
+        raise(users.current.emotion)
         furhat.ask("What is the answer?")
     }
+
+    onEvent<Annoyed> {
+        furhat.attendAll()
+
+        goto(QuestionDoubt)
+    }
+
+    onEvent<Doubt> {
+        furhat.attendAll()
+
+        goto(QuestionDoubt)
+    }
+
+//    onEvent<Disaprove> {
+//        furhat.say("Registred disapprove")
+//        reentry()
+//    }
+//
+//    onEvent<Approve> {
+//        furhat.say("Registered approve")
+//        reentry()
+//    }
+//
+//    onEvent<Happy> {
+//        furhat.say("Registered Happy")
+//        reentry()
+//    }
 
     onResponse<Repeat> {
         val current_q = users.current.score.getCurrentQuestion()
@@ -244,10 +335,6 @@ var AskQuestion: State = state(FallbackState){
         furhat.say("I will give you a hint")
         furhat.say(users.current.score.getCurrentQuestion().hint)
         reentry()
-    }
-
-    onResponse<No> {
-        goto(ExplainAnswer)
     }
 
     onResponse<QuestionAnswer>{
@@ -322,8 +409,6 @@ var AnswerCorrect: State = state(FallbackState){
         if(users.current.score.getCurrentQuestionNumber() >= 5){
             goto(EnoughExercisesEndState)
         }
-
-
 
         furhat.attendAll()
 

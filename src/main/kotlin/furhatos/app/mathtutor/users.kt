@@ -17,10 +17,11 @@ public class Affect {
     public fun getAffect() : Event {
         var emotion  = ""
         try{
-            emotion = client.callServer(0, "proceed", 1, "gaze")
+            emotion = client.callAffectServer()
         }catch (e: RuntimeException){
             print("Could not fetch emotion. Is the server online? ")
             println(e);
+
         }
 
         var affection = AffectEnumAll.Nothing
@@ -30,26 +31,23 @@ public class Affect {
             print("Could not find return value inside the defined Affect enum. ")
         }
 
-        return when(affection){
-            AffectEnumAll.Affection -> Annoyed()
-            AffectEnumAll.Anger -> Annoyed()
+        val registeredEmotion = when(affection){
+
+            AffectEnumAll.Anger -> Angry()
+            AffectEnumAll.Sadness -> Angry()
+            AffectEnumAll.Pain -> Angry()
+
             AffectEnumAll.Annoyance -> Annoyed()
             AffectEnumAll.Aversion -> Annoyed()
             AffectEnumAll.Disquietment -> Annoyed()
             AffectEnumAll.Fatigue -> Annoyed()
-            AffectEnumAll.Pain -> Annoyed()
-            AffectEnumAll.Sadness -> Annoyed()
+
             AffectEnumAll.Sensitivity -> Annoyed()
-            AffectEnumAll.Suffering -> Annoyed()
 
-            AffectEnumAll.Disapproval -> Disaprove()
-            AffectEnumAll.Disconnection -> Disaprove()
+            AffectEnumAll.Disapproval -> Annoyed()
+            AffectEnumAll.Disconnection -> Annoyed()
 
-            AffectEnumAll.Anticipation -> Approve()
-            AffectEnumAll.Engagement -> Approve()
-            AffectEnumAll.Esteem -> Approve()
-            AffectEnumAll.Excitement -> Approve()
-
+            AffectEnumAll.Suffering -> Doubt()
             AffectEnumAll.Doubt -> Doubt()
             AffectEnumAll.Confusion -> Doubt()
             AffectEnumAll.Embarrassment -> Doubt()
@@ -57,14 +55,21 @@ public class Affect {
             AffectEnumAll.Surprise -> Doubt()
             AffectEnumAll.Yearning -> Doubt()
 
-            AffectEnumAll.Happiness -> Happy()
-            AffectEnumAll.Peace -> Happy()
-            AffectEnumAll.Confidence -> Happy()
-            AffectEnumAll.Pleasure -> Happy()
-            AffectEnumAll.Sympathy -> Happy()
+            AffectEnumAll.Anticipation -> Positive()
+            AffectEnumAll.Engagement -> Positive()
+            AffectEnumAll.Esteem -> Positive()
+            AffectEnumAll.Excitement -> Positive()
+            AffectEnumAll.Affection -> Positive()
+            AffectEnumAll.Happiness ->Positive()
+            AffectEnumAll.Peace -> Positive()
+            AffectEnumAll.Confidence -> Positive()
+            AffectEnumAll.Pleasure -> Positive()
+            AffectEnumAll.Sympathy -> Positive()
 
             AffectEnumAll.Nothing -> Unknown()
         }
+        print("Emotion from the server: (mapped-emotion, server-emotion)"+ registeredEmotion.event_name + ", ==== " + emotion)
+        return registeredEmotion
     }
 }
 
@@ -108,15 +113,16 @@ abstract class Question constructor(
         val total_num : Int,
         val percentage: Int
 ){
-        abstract val question: String
-        abstract val explaination: String
-        abstract val hint : String
-        abstract val answer: Number;
+    abstract val question: String
+    abstract val explaination: String
+    abstract val hint : String
+    abstract val answer: Number;
 
-        var tries : Int  = 0
-        fun incrementTries(){
-            this.tries = this.tries + 1
-        }
+    var skip_intro: Boolean = false
+    var tries : Int  = 0
+    fun incrementTries(){
+        this.tries = this.tries + 1
+    }
 
 }
 
@@ -169,7 +175,6 @@ var questionHard = arrayOf(
         PercentageOf(300, 60),
         WhatPercentage(400, 80),
         WhatPercentage(800, 20)
-
 )
 
 class Score{
@@ -181,6 +186,16 @@ class Score{
     var current_level : MutableList<PuzzleLevels> = ArrayList()
 
     fun getCurrentQuestionNumber() : Int = this.num_correct_questions + this.num_wrong_questions
+
+    fun initHardQuestion(){
+        if(question_history.size == 0){
+            question_history.add(questionHard.get(0))
+            current_level.add(PuzzleLevels.hard)
+        } else {
+            print("Init level was already set to HARD")
+        }
+
+    }
 
     /**
      * The score is normalized according to the number of questions.

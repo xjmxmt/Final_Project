@@ -1,5 +1,6 @@
 package furhatos.app.mathtutor.nlu
 
+import furhatos.nlu.EnumEntity
 import furhatos.nlu.Intent
 import furhatos.util.Language
 import furhatos.nlu.common.Number
@@ -12,7 +13,7 @@ class Confused : Intent() {
 
 class OnePer : Intent() {
     override fun getExamples(lang: Language): List<String> {
-        return listOf("one percent", "1%")
+        return listOf("one percent", "1%", "one", "1")
     }
 }
 
@@ -73,5 +74,65 @@ class QuestionAnswer (
     }
 }
 
+class Swearing(val swear_word : SwearWords? = null) : Intent() {
+
+    override fun getExamples(lang: Language): List<String> {
+        return listOf(
+                "@swear_word ")
+    }
+}
+
+
+class SwearWords : EnumEntity(stemming = true, speechRecPhrases = true) {
+    override fun getEnum(lang: Language): List<String> {
+        return listOf("arse",
+                "ass",
+                "asshole",
+                "bastard",
+                "bitch",
+                "bollocks",
+                "brotherfucker",
+                "bugger",
+                "bullshit",
+                "child-fucker",
+                "Christ on a bike",
+                "Christ on a cracker",
+                "cocksucker",
+                "crap",
+                "cunt",
+                "damn",
+                "dick",
+                "effing",
+                "fatherfucker",
+                "frigger",
+                "fuck",
+                "goddamn",
+                "godsdamn",
+                "hell",
+                "holy shit",
+                "horseshit",
+                "Jesus Christ",
+                "Jesus fuck",
+                "Jesus H. Christ",
+                "Jesus Harold Christ",
+                "Jesus wept",
+                "Jesus, Mary and Joseph",
+                "Judas Priest",
+                "motherfucker",
+                "nigga",
+                "piss",
+                "prick",
+                "shit",
+                "shit ass",
+                "shitass",
+                "sisterfucker",
+                "slut",
+                "son of a bitch",
+                "son of a whore",
+                "sweet Jesus",
+                "twat"
+        )
+    }
+}
 
 
