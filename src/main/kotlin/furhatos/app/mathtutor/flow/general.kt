@@ -91,8 +91,9 @@ val FallbackState: State = state(Interaction) {
     }
 
     onEvent<Smile> {
-        furhat.gesture(Gestures.BigSmile, async = false)
+        furhat.gesture(Gestures.BigSmile)
         furhat.say("Now smiling")
+        reentry()
     }
 
     onEvent<Gaze> {

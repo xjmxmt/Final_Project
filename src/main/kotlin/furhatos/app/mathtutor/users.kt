@@ -2,6 +2,8 @@ package furhatos.app.mathtutor
 import furhatos.app.mathtutor.flow.*
 import furhatos.event.Event
 import furhatos.flow.kotlin.furhat
+import furhatos.gestures.Gesture
+import furhatos.gestures.Gestures
 import furhatos.records.User
 import java.lang.Exception
 import java.net.Socket
@@ -86,7 +88,8 @@ val User.emotion : Emotion
 public class Emotion {
     val client = DialogManagerClient()
 
-    fun getEmotion(round_num : Int, user_action : String, user_emotion_idx : Int, agent_action : String) : Event {
+    fun getEmotion(round_num : Int, user_action : String, user_emotion_idx : Int, agent_action : String) : Gesture {
+        print("RUNNING THE DIALOG MANAGER IN THE CLIENT!")
         var raw_action = ""
         try{
             raw_action = client.callServer(round_num, user_action, user_emotion_idx, agent_action)
@@ -100,13 +103,13 @@ public class Emotion {
         print("GOTTEN ACTION: "+ action)
 
         return when(action){
-            EmotionActionEnum.goto_nex_state -> GoToNextState()
-            EmotionActionEnum.goto_encourage_state -> GoToEncourage()
-            EmotionActionEnum.gaze -> Gaze()
-            EmotionActionEnum.look_away -> LookAWay()
-            EmotionActionEnum.say_again -> SayAgain()
-            EmotionActionEnum.smile -> Smile()
-            EmotionActionEnum.unknown -> Unknown()
+            EmotionActionEnum.goto_nex_state -> Gestures.Blink// GoToNextState()
+            EmotionActionEnum.goto_encourage_state -> Gestures.Thoughtful//GoToEncourage()
+            EmotionActionEnum.gaze -> Gestures.GazeAway// Gaze()
+            EmotionActionEnum.look_away -> Gestures.CloseEyes// LookAWay()
+            EmotionActionEnum.say_again -> Gestures.Nod// SayAgain()
+            EmotionActionEnum.smile -> Gestures.BigSmile//Smile()
+            EmotionActionEnum.unknown -> Gestures.Blink//Unknown()
         }
     }
 }
