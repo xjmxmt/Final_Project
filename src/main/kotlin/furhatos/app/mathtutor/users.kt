@@ -3,6 +3,7 @@ import furhatos.app.mathtutor.flow.*
 import furhatos.event.Event
 import furhatos.records.User
 import java.lang.Exception
+import java.util.*
 
 val User.info : CurrentUser
     get() = data.getOrPut(CurrentUser::class.qualifiedName, CurrentUser())
@@ -154,11 +155,11 @@ var questionsEasy = arrayOf(
 
 // Medium
 var questionsMedium = arrayOf(
-        PercentageOf(640, 25),
+        PercentageOf(600, 25),
         WhatPercentage(600, 200),
         PercentageOf(300, 60),
         WhatPercentage(400, 80),
-        WhatPercentage(800, 16)
+        WhatPercentage(800, 40)
 )
 
 // Hard
@@ -173,38 +174,84 @@ var questionHard = arrayOf(
 
 class Score{
 
-    var points: Number = 10
     var num_wrong_questions : Int = 0
     var num_correct_questions : Int = 0
+    var num_corrected_questions : Int = 0
+    var question_history : MutableList<Question> = ArrayList()
+    var current_level : MutableList<PuzzleLevels> = ArrayList()
 
     fun getCurrentQuestionNumber() : Int = this.num_correct_questions + this.num_wrong_questions
+
+    /**
+     * The score is normalized according to the number of questions.
+     * Good question = +2 points
+     * Corrected question = +1 point
+     * Wrong question = 0 point
+     */
+    fun getScore(): Double {
+        val total_questions = getCurrentQuestionNumber()
+
+        if(total_questions == 0){
+            return 0.0
+        }
+
+        val points = num_correct_questions * 2 + num_corrected_questions
+
+        return points.toDouble() / total_questions.toDouble()
+    }
 
     fun correctAnswer() {
         print("Correct answer")
         this.num_correct_questions++
     }
     fun incorrectAnswer(){
-        print("Before points: " + this.points)
-        this.points =- 2
         this.num_wrong_questions++
-        print("After points: " + this.points)
     }
 
     fun correctedAnswer(){
-        print("Before points: " + this.points)
-        this.points =+ 1
         this.num_wrong_questions++
-        print("After points: " + this.points)
     }
 
-    fun getCurrentQuestion(level: PuzzleLevels) : Question {
-        if(level == PuzzleLevels.easy){
-            return questionsEasy.get(getCurrentQuestionNumber())
-        } else if(level == PuzzleLevels.medium){
-            return questionsMedium.get(getCurrentQuestionNumber())
+
+    fun getCurrentLevel() : PuzzleLevels {
+        if(this.current_level.size > 0){
+            return this.current_level.get(this.current_level.size - 1)
+        } else {
+            return PuzzleLevels.medium
+        }
+    }
+
+    fun getCurrentQuestion() : Question {
+
+        println("Question number and question history" + getCurrentQuestionNumber() + "---" + this.question_history.size)
+
+        if(this.question_history.size == 0 || getCurrentQuestionNumber() > (this.question_history.size - 1)){
+
+            val score = this.getScore()
+            var level = PuzzleLevels.medium;
+            if(score < 0.75){
+                level = PuzzleLevels.easy
+            } else if (score > 1.25){
+                level = PuzzleLevels.hard
+            }
+
+            print("It should give now a " + level + " question")
+            // Get a new question from the list.
+            var question = questionHard.get(getCurrentQuestionNumber())
+
+            if(level == PuzzleLevels.easy){
+                question =  questionsEasy.get(getCurrentQuestionNumber())
+            } else if(level == PuzzleLevels.medium){
+                question =  questionsMedium.get(getCurrentQuestionNumber())
+            }
+
+            this.current_level.add(level)
+            this.question_history.add(question);
+            return question
         }
 
-        return questionHard.get(getCurrentQuestionNumber())
+        return this.question_history.get(this.question_history.size - 1 )
+
     }
 }
 
