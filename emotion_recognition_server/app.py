@@ -72,7 +72,7 @@ def gen(camera):
     return xs
 
 
-@app.route('/affect')
+@app.route('/emotion')
 def retEmotion():
     print('This is running...')
     print('Request from client: ', request.args['data'])
@@ -128,5 +128,5 @@ if __name__ == '__main__':
     return_image = None
 
     HOST = '127.0.0.1'
-    PORT = 6000
+    PORT = 6000  # rl dialog manager is using Port 5000
     app.run(host=HOST, port=PORT, debug=True)

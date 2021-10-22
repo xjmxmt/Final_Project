@@ -13,3 +13,12 @@ RL_dialog_manager/__pycache__/*
 RL_dialog_manager/.idea/*
 RL_dialog_manager/data/*
 RL_dialog_manager/utils/__pycache__/*
+
+emotion_recognition_server/__pycache__/*
+emotion_recognition_server/.idea/*
+emotion_recognition_server/.ipynb_checkpoints/*
+*.jpg
+emotion_recognition_server/places/*
+emotion_recognition_server/models/*
+emotion_recognition_server/experiment/*
+emotion_recognition_server/assets/*
