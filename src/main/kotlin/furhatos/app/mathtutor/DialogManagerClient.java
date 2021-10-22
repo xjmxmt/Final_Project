@@ -9,7 +9,7 @@ public class DialogManagerClient {
 
         try {
 
-            String url_str = String.format("http://127.0.0.1:5000/emotion?data=%d-%s-%d-%s",
+            String url_str = String.format("http://127.0.0.1:5000/affect?data=%d-%s-%d-%s",
                     round_num, user_action, emotion_level, agent_action);
             URL url = new URL(url_str);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();

@@ -13,7 +13,7 @@ public class SocketClient {
 
         try {
 
-            URL url = new URL("http://127.0.0.1:6000/emotion?data=HelloPython");
+            URL url = new URL("http://127.0.0.1:6000/affect?data=HelloPython");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Accept", "application/json");

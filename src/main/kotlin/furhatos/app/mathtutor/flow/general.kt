@@ -89,4 +89,34 @@ val FallbackState: State = state(Interaction) {
 
         reentry()
     }
+
+    onEvent<Smile> {
+        furhat.gesture(Gestures.BigSmile, async = false)
+        furhat.say("Now smiling")
+    }
+
+    onEvent<Gaze> {
+        furhat.attendAll()
+        furhat.glance(users.current.id)
+    }
+
+    onEvent<LookAWay> {
+        furhat.say ( "Im looking awway" )
+        furhat.gesture(Gestures.GazeAway)
+    }
+
+    onEvent<GoToEncourage> {
+        furhat.say("I will encourage you!")
+        furhat.attendAll()
+        furhat.say("Hey relax, I am here to help you. Learning is a nice thing to do. ")
+        furhat.attendNobody()
+        furhat.say("I know it can be hard to solve these math problems")
+        furhat.attendAll()
+        furhat.ask("Shall I help you to explain the previous question?")
+        reentry()
+    }
+
+    onEvent<SayAgain> {
+        reentry()
+    }
 }

@@ -11,7 +11,6 @@ import furhatos.records.Location
 var waiting_time = 60000
 var num_reentry = 2
 val client: SocketClient = SocketClient()
-val dialog_manager: DialogManagerClient = DialogManagerClient()
 
 // same meaning as turn: [agent speaking, user speaking]
 // remember to += 1 after each turn
@@ -35,9 +34,9 @@ val Start: State = state(FallbackState) {
         val location = Location(1.0, 1.0, 1.0)
         furhat.gesture(Gestures.BigSmile, async = false)  // agent's initial action is smile
 
-        val user_emotion = users.current.emotion
+        val user_emotion = users.current.affect
 
-        print("Showing emotion: " + user_emotion)
+        print("Showing affect: " + user_emotion)
 
         raise(user_emotion)
         furhat.glance(location)
@@ -48,7 +47,7 @@ val Start: State = state(FallbackState) {
 
     onReentry {
         if (reentryCount > num_reentry) goto(MTIntro)
-//        raise(users.current.emotion)
+//        raise(users.current.affect)
         furhat.ask("Hello! How can i help you?")
     }
 
@@ -57,57 +56,22 @@ val Start: State = state(FallbackState) {
 
     onEvent<Doubt>{
 
-        val action = dialog_manager.callServer(round_num, user_action, user_emotion_idx, agent_action)
-
-        if (action == "smile") {
-            // smile
-        } else if (action == "gaze") {
-            // gaze
-        } else if (action == "look away") {
-            // look away
-        } else if (action == "goto_encourage_state") {
-            furhat.say("I know it can be hard to solve these math problems")
-        } else if (action == "say_again") {
-            reentry()
-        }
+        raise(users.current.emotion.getEmotion(round_num, user_action, user_emotion_idx, agent_action))
 
         goto(StartDoubt)
     }
 
     onResponse<Confused> {
 
-        val action = dialog_manager.callServer(round_num, user_action, user_emotion_idx, agent_action)
-
-        if (action == "smile") {
-            // smile
-        } else if (action == "gaze") {
-            // gaze
-        } else if (action == "look away") {
-            // look away
-        } else if (action == "goto_encourage_state") {
-            furhat.say("I know it can be hard to solve these math problems")
-        } else if (action == "say_again") {
-            reentry()
-        }
+        raise(users.current.emotion.getEmotion(round_num, user_action, user_emotion_idx, agent_action))
 
         goto(MTIntro)
     }
 
     onResponse<Learn> {
 
-        val action = dialog_manager.callServer(round_num, user_action, user_emotion_idx, agent_action)
+        raise(users.current.emotion.getEmotion(round_num, user_action, user_emotion_idx, agent_action))
 
-        if (action == "smile") {
-            // smile
-        } else if (action == "gaze") {
-            // gaze
-        } else if (action == "look away") {
-            // look away
-        } else if (action == "goto_encourage_state") {
-            furhat.say("I know it can be hard to solve these math problems")
-        } else if (action == "say_again") {
-            reentry()
-        }
 
         goto(LearnIntro)
     }

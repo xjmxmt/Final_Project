@@ -1,14 +1,16 @@
 package furhatos.app.mathtutor
 import furhatos.app.mathtutor.flow.*
 import furhatos.event.Event
+import furhatos.flow.kotlin.furhat
 import furhatos.records.User
 import java.lang.Exception
+import java.net.Socket
 import java.util.*
 
 val User.info : CurrentUser
     get() = data.getOrPut(CurrentUser::class.qualifiedName, CurrentUser())
 
-val User.emotion : Event
+val User.affect : Event
     get () = Affect().getAffect()
 
 public class Affect {
@@ -19,7 +21,7 @@ public class Affect {
         try{
             emotion = client.callServer()
         }catch (e: RuntimeException){
-            print("Could not fetch emotion. Is the server online? ")
+            print("Could not fetch affect. Is the server online? ")
             println(e);
         }
 
@@ -64,6 +66,47 @@ public class Affect {
             AffectEnumAll.Sympathy -> Happy()
 
             AffectEnumAll.Nothing -> Unknown()
+        }
+    }
+}
+
+enum class EmotionActionEnum {
+    goto_nex_state,
+    smile,
+    gaze,
+    look_away,
+    goto_encourage_state,
+    say_again,
+    unknown
+}
+
+val User.emotion : Emotion
+    get() =  Emotion()
+
+public class Emotion {
+    val client = DialogManagerClient()
+
+    fun getEmotion(round_num : Int, user_action : String, user_emotion_idx : Int, agent_action : String) : Event {
+        var raw_action = ""
+        try{
+            raw_action = client.callServer(round_num, user_action, user_emotion_idx, agent_action)
+        }catch (e: RuntimeException){
+            print("Could not fetch affect. Is the server online? ")
+            println(e);
+        }
+
+        val action = EmotionActionEnum.valueOf(raw_action);
+
+        print("GOTTEN ACTION: "+ action)
+
+        return when(action){
+            EmotionActionEnum.goto_nex_state -> GoToNextState()
+            EmotionActionEnum.goto_encourage_state -> GoToEncourage()
+            EmotionActionEnum.gaze -> Gaze()
+            EmotionActionEnum.look_away -> LookAWay()
+            EmotionActionEnum.say_again -> SayAgain()
+            EmotionActionEnum.smile -> Smile()
+            EmotionActionEnum.unknown -> Unknown()
         }
     }
 }
