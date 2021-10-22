@@ -1,5 +1,6 @@
 package furhatos.app.mathtutor.flow
 
+import furhatos.app.mathtutor.nlu.Swearing
 import furhatos.flow.kotlin.*
 import furhatos.gestures.Gestures
 import furhatos.util.*
@@ -54,17 +55,7 @@ val Interaction: State = state {
 
 val FallbackState: State = state(Interaction) {
 
-    onEvent<Annoyed> {
-
-        furhat.attendNobody()
-        furhat.say ( "You look at bit annoyed. I am very sorry for that, I am still learning. " )
-        print(users.current)
-        furhat.attendAll()
-        furhat.say("Please talk slow and clearly to me. That helps!")
-        reentry()
-    }
-
-    onResponse(cond={it.interrupted}) {
+     onResponse(cond={it.interrupted}) {
 
         furhat.glance(it.userId, 1000)
 
@@ -74,6 +65,12 @@ val FallbackState: State = state(Interaction) {
             + "um.."
             + "Can you repeat?"
         }})
+    }
+
+    onResponse<Swearing> {
+        furhat.attendAll()
+        furhat.say("That is not kind to say.")
+        reentry()
     }
 
     onResponse {

@@ -21,6 +21,7 @@ public class Affect {
         }catch (e: RuntimeException){
             print("Could not fetch emotion. Is the server online? ")
             println(e);
+
         }
 
         var affection = AffectEnumAll.Nothing
@@ -30,7 +31,7 @@ public class Affect {
             print("Could not find return value inside the defined Affect enum. ")
         }
 
-        return when(affection){
+        val registeredEmotion = when(affection){
             AffectEnumAll.Affection -> Annoyed()
             AffectEnumAll.Anger -> Annoyed()
             AffectEnumAll.Annoyance -> Annoyed()
@@ -40,7 +41,6 @@ public class Affect {
             AffectEnumAll.Pain -> Annoyed()
             AffectEnumAll.Sadness -> Annoyed()
             AffectEnumAll.Sensitivity -> Annoyed()
-            AffectEnumAll.Suffering -> Annoyed()
 
             AffectEnumAll.Disapproval -> Disaprove()
             AffectEnumAll.Disconnection -> Disaprove()
@@ -50,6 +50,7 @@ public class Affect {
             AffectEnumAll.Esteem -> Approve()
             AffectEnumAll.Excitement -> Approve()
 
+            AffectEnumAll.Suffering -> Doubt()
             AffectEnumAll.Doubt -> Doubt()
             AffectEnumAll.Confusion -> Doubt()
             AffectEnumAll.Embarrassment -> Doubt()
@@ -65,6 +66,8 @@ public class Affect {
 
             AffectEnumAll.Nothing -> Unknown()
         }
+        print("Emotion from the server: (mapped-emotion, server-emotion)"+ registeredEmotion.event_name + ", ==== " + emotion)
+        return registeredEmotion
     }
 }
 
@@ -108,15 +111,16 @@ abstract class Question constructor(
         val total_num : Int,
         val percentage: Int
 ){
-        abstract val question: String
-        abstract val explaination: String
-        abstract val hint : String
-        abstract val answer: Number;
+    abstract val question: String
+    abstract val explaination: String
+    abstract val hint : String
+    abstract val answer: Number;
 
-        var tries : Int  = 0
-        fun incrementTries(){
-            this.tries = this.tries + 1
-        }
+    var skip_intro: Boolean = false
+    var tries : Int  = 0
+    fun incrementTries(){
+        this.tries = this.tries + 1
+    }
 
 }
 
@@ -169,7 +173,6 @@ var questionHard = arrayOf(
         PercentageOf(300, 60),
         WhatPercentage(400, 80),
         WhatPercentage(800, 20)
-
 )
 
 class Score{
@@ -181,6 +184,16 @@ class Score{
     var current_level : MutableList<PuzzleLevels> = ArrayList()
 
     fun getCurrentQuestionNumber() : Int = this.num_correct_questions + this.num_wrong_questions
+
+    fun initHardQuestion(){
+        if(question_history.size == 0){
+            question_history.add(questionHard.get(0))
+            current_level.add(PuzzleLevels.hard)
+        } else {
+            print("Init level was already set to HARD")
+        }
+
+    }
 
     /**
      * The score is normalized according to the number of questions.
