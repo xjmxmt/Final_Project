@@ -248,9 +248,7 @@ var AskQuestion: State = state(FallbackState){
             //TODO Only go to the wrong question, if user has 2 times the question wrong. Else goto try again.
             goto(AnswerWrong)
         }
-
     }
-
 }
 
 var AnswerWrong : State = state(FallbackState){
