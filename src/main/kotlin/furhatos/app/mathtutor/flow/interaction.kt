@@ -18,8 +18,6 @@ val Start: State = state(FallbackState) {
     onEntry {
         furhat.glance(users.current)
 
-        goto(AskQuestion)
-
         val location = Location(1.0, 1.0, 1.0)
         furhat.gesture(Gestures.BigSmile, async = false)
 
@@ -256,11 +254,7 @@ var AskQuestion: State = state(FallbackState){
 
         val current_q = users.current.score.getCurrentQuestion()
 
-        print("The returned intent value was: " + it.intent)
-        print("Value should be "+ current_q.answer)
-
         val answer = it.intent.getAnswer().value
-        print("This was the count: " + answer)
 
         if(answer == current_q.answer){
             furhat.attendAll()
@@ -284,8 +278,6 @@ var AnswerWrong : State = state(FallbackState){
 
         val current_q = users.current.score.getCurrentQuestion()
         current_q.incrementTries()
-
-        print("Current tries = " + current_q.tries)
 
         if(current_q.tries > 3){
             goto(ExplainAnswer)
