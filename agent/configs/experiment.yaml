@@ -1,0 +1,24 @@
+---
+# Experiment configuration
+batch_size: 1
+test_batch_size: 1
+max_iteration: 10000
+lr: 0.001
+load: False
+cuda: True
+shuffle: True
+gamma: 0.999
+
+# Model setting
+use_usersim: True
+num_emotion: 4
+num_user_action: 3
+max_rounds: 20
+update_steps: 1000
+action_shape: 6
+hidden_shape: 24
+
+# Path setting
+log_path: 'logs/log.txt'
+dqn_log_path: 'logs/dqn_log.txt'
+checkpoint_path: 'checkpoint'
