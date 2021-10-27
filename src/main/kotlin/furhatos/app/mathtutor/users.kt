@@ -12,13 +12,13 @@ import java.util.*
 val User.info : CurrentUser
     get() = data.getOrPut(CurrentUser::class.qualifiedName, CurrentUser())
 
-val User.affect : Event
+val User.affect : Int
     get () = Affect().getAffect()
 
 public class Affect {
     val client = SocketClient()
 
-    public fun getAffect() : Event {
+    public fun getAffect() : Int {
         var emotion  = ""
         try{
             emotion = client.callServer()
@@ -34,42 +34,96 @@ public class Affect {
             print("Could not find return value inside the defined Affect enum. ")
         }
 
+        // 4 levels of emotion
+        // 0: positive, 1: not very frustration, 2: a bit frustration, 3: frustration
         return when(affection){
-            AffectEnumAll.Affection -> Annoyed()
-            AffectEnumAll.Anger -> Annoyed()
-            AffectEnumAll.Annoyance -> Annoyed()
-            AffectEnumAll.Aversion -> Annoyed()
-            AffectEnumAll.Disquietment -> Annoyed()
-            AffectEnumAll.Fatigue -> Annoyed()
-            AffectEnumAll.Pain -> Annoyed()
-            AffectEnumAll.Sadness -> Annoyed()
-            AffectEnumAll.Sensitivity -> Annoyed()
-            AffectEnumAll.Suffering -> Annoyed()
+            AffectEnumAll.Affection -> 0
+            AffectEnumAll.Anticipation -> 0
+            AffectEnumAll.Confidence -> 0
+            AffectEnumAll.Engagement -> 0
+            AffectEnumAll.Esteem -> 0
+            AffectEnumAll.Excitement -> 0
+            AffectEnumAll.Happiness -> 0
+            AffectEnumAll.Peace -> 0
+            AffectEnumAll.Pleasure -> 0
+            AffectEnumAll.Sensitivity -> 0
+            AffectEnumAll.Surprise -> 0
+            AffectEnumAll.Sympathy -> 0
+            AffectEnumAll.Yearning ->0
+            AffectEnumAll.Nothing -> 0
 
-            AffectEnumAll.Disapproval -> Disaprove()
-            AffectEnumAll.Disconnection -> Disaprove()
+            AffectEnumAll.Disconnection -> 1
+            AffectEnumAll.Disquietment -> 1
+            AffectEnumAll.Doubt -> 1
+            AffectEnumAll.Confusion -> 1
+            AffectEnumAll.Embarrassment -> 1
 
-            AffectEnumAll.Anticipation -> Approve()
-            AffectEnumAll.Engagement -> Approve()
-            AffectEnumAll.Esteem -> Approve()
-            AffectEnumAll.Excitement -> Approve()
+            AffectEnumAll.Annoyance -> 2
+            AffectEnumAll.Disapproval -> 2
+            AffectEnumAll.Fatigue -> 2
+            AffectEnumAll.Fear -> 2
 
-            AffectEnumAll.Doubt -> Doubt()
-            AffectEnumAll.Confusion -> Doubt()
-            AffectEnumAll.Embarrassment -> Doubt()
-            AffectEnumAll.Fear -> Doubt()
-            AffectEnumAll.Surprise -> Doubt()
-            AffectEnumAll.Yearning -> Doubt()
-
-            AffectEnumAll.Happiness -> Happy()
-            AffectEnumAll.Peace -> Happy()
-            AffectEnumAll.Confidence -> Happy()
-            AffectEnumAll.Pleasure -> Happy()
-            AffectEnumAll.Sympathy -> Happy()
-
-            AffectEnumAll.Nothing -> Unknown()
+            AffectEnumAll.Anger -> 3
+            AffectEnumAll.Aversion -> 3
+            AffectEnumAll.Pain -> 3
+            AffectEnumAll.Sadness -> 3
+            AffectEnumAll.Suffering -> 3
         }
     }
+
+    // Use for raising user emotion as event
+//    public fun getAffect() : Event {
+//        var emotion  = ""
+//        try{
+//            emotion = client.callServer()
+//        }catch (e: RuntimeException){
+//            print("Could not fetch affect. Is the server online? ")
+//            println(e);
+//        }
+//
+//        var affection = AffectEnumAll.Nothing
+//        try{
+//            affection = AffectEnumAll.valueOf(emotion);
+//        }catch (e : Exception){
+//            print("Could not find return value inside the defined Affect enum. ")
+//        }
+//
+//        return when(affection){
+//            AffectEnumAll.Affection -> Annoyed()
+//            AffectEnumAll.Anger -> Annoyed()
+//            AffectEnumAll.Annoyance -> Annoyed()
+//            AffectEnumAll.Aversion -> Annoyed()
+//            AffectEnumAll.Disquietment -> Annoyed()
+//            AffectEnumAll.Fatigue -> Annoyed()
+//            AffectEnumAll.Pain -> Annoyed()
+//            AffectEnumAll.Sadness -> Annoyed()
+//            AffectEnumAll.Sensitivity -> Annoyed()
+//            AffectEnumAll.Suffering -> Annoyed()
+//
+//            AffectEnumAll.Disapproval -> Disaprove()
+//            AffectEnumAll.Disconnection -> Disaprove()
+//
+//            AffectEnumAll.Anticipation -> Approve()
+//            AffectEnumAll.Engagement -> Approve()
+//            AffectEnumAll.Esteem -> Approve()
+//            AffectEnumAll.Excitement -> Approve()
+//
+//            AffectEnumAll.Doubt -> Doubt()
+//            AffectEnumAll.Confusion -> Doubt()
+//            AffectEnumAll.Embarrassment -> Doubt()
+//            AffectEnumAll.Fear -> Doubt()
+//            AffectEnumAll.Surprise -> Doubt()
+//            AffectEnumAll.Yearning -> Doubt()
+//
+//            AffectEnumAll.Happiness -> Happy()
+//            AffectEnumAll.Peace -> Happy()
+//            AffectEnumAll.Confidence -> Happy()
+//            AffectEnumAll.Pleasure -> Happy()
+//            AffectEnumAll.Sympathy -> Happy()
+//
+//            AffectEnumAll.Nothing -> Unknown()
+//        }
+//    }
 }
 
 enum class EmotionActionEnum {

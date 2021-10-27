@@ -12,18 +12,18 @@ var waiting_time = 60000
 var num_reentry = 2
 val client: SocketClient = SocketClient()
 
-// same meaning as turn: [agent speaking, user speaking]
+// same meaning as "turn", [agent speaking, user speaking]
 // remember to += 1 after each turn
 var round_num = 0
 
 // all possible user actions: 'proceed', 'silence', 'end_dialog'
 var user_action = "proceed"
 
-// has 4 levels
+// has 4 levels, representing different levels of frustration
 var user_emotion_idx = 0
 
 // all possible agent actions: 'goto_next_state', 'smile', 'gaze', 'look_away', 'goto_encourage_state', 'say_again'
-var agent_action = "smile"
+var agent_action = "smile"  // agent's initial action is smile
 
 //intial state
 val Start: State = state(FallbackState) {
@@ -31,14 +31,14 @@ val Start: State = state(FallbackState) {
     onEntry {
         furhat.glance(users.current)
         val location = Location(1.0, 1.0, 1.0)
-        furhat.gesture(users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action))  // agent's initial action is smile
+        furhat.gesture(Gestures.BigSmile)  // agent's initial action is smile
 
         val user_emotion = users.current.affect
+        print("debugging: showing affect: " + user_emotion)
+//        raise(user_emotion)
 
-        print("Showing affect: " + user_emotion)
-
-        raise(user_emotion)
         furhat.glance(location)
+        round_num += 1
         furhat.ask("Hello! How can I help you?")
 
 
@@ -53,13 +53,13 @@ val Start: State = state(FallbackState) {
 
 
 
-    onEvent<Doubt>{
-        furhat.attendAll()
-        furhat.gesture(users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action))
-        furhat.say("Do i continue after this?")
-
-        goto(StartDoubt)
-    }
+//    onEvent<Doubt>{
+//        furhat.attendAll()
+//        furhat.gesture(users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action))
+//        furhat.say("Do i continue after this?")
+//
+//        goto(StartDoubt)
+//    }
 
     onResponse<Confused> {
         furhat.attendAll()

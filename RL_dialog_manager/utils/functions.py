@@ -94,11 +94,15 @@ def draw_loss_curve(path):
 
     with open(path, 'r') as f:
         lines = f.readlines()
+    print(lines)
 
     losses = []
     for l in lines:
-        loss = re.search(r'Loss: (.*)', l.strip()).group().replace('Loss:', '')
-        losses.append(float(loss))
+        try:
+            loss = re.search(r'Loss: (.*)', l.strip()).group().replace('Loss:', '')
+            losses.append(float(loss))
+        except AttributeError as e:
+            print(e)
     x = np.array(list(range(len(losses))))
     plt.plot(x, losses)
     plt.yscale('linear')

@@ -1,10 +1,17 @@
 import random
+import time
+import pickle
+from tqdm import tqdm
 import numpy as np
+import yaml
+from utils.base_config import BareConfig
+from replay_memory import ReplayMemory
+from utils.functions import convert_idx_to_agent_action
 
 
 """
-    User simulator basically contains the rules for training the RL dialog manager,
-    which means, if we want to make the strategy a bit different, we need to modify the user simulator.
+    User simulator creates the environment for training a RL dialog manager,
+    which means if we want to make the strategy a bit different, we just modify the user simulator.
 """
 
 
@@ -24,7 +31,7 @@ class UserSimulator:
         self.emotion_level3 = ['Anger', 'Aversion', 'Pain', 'Sadness', 'Suffering']  # penalty = 3
         self.emotion_level0 = ['Affection', 'Anticipation', 'Confidence', 'Engagement', 'Esteem',
                                'Excitement', 'Happiness', 'Peace', 'Pleasure', 'Sensitivity',
-                               'Surprise', 'Sympathy']  # penalty = 0
+                               'Surprise', 'Sympathy', 'Yearning']  # penalty = 0
 
         self.possible_actions = ['proceed', 'silence', 'end_dialog']
         self.actions_dict = {'proceed': 0, 'silence': 1, 'end_dialog': 2}
@@ -296,11 +303,115 @@ class UserSimulator:
 
     def get_rewards(self):
 
-        return self.reward
+        return self.last_emotion_level
+
 
 
 if __name__ == '__main__':
     user_simulator = UserSimulator()
 
     possible_agent_actions = ['goto_next_state', 'smile', 'gaze', 'look_away', 'goto_encourage_state', 'say_again']
+
+    config_path = 'configs/experiment.yaml'
+
+    with open(config_path) as file:
+        cfg = BareConfig()
+        yaml_data = yaml.load(file, Loader=yaml.FullLoader)
+        cfg.merge_yaml(yaml_data)
+
+    max_rounds = cfg.max_rounds
+    num_user_actions = 3
+    num_user_emotion_levels = 4
+    num_agent_actions = 6
+    total_length = max_rounds * num_user_actions ** 2 * num_user_emotion_levels ** 2 * num_agent_actions ** 2
+    print(f'total_length: {total_length}')  # 103681
+
+    memory = ReplayMemory(total_length)
+    print(f'reply_memory_length: {len(memory)}')
+
+    start_time = time.time()
+    pbar = tqdm(total=total_length+1)
+    current_length = 0
+    while True:
+        if len(memory) == total_length:
+            break
+
+        initial_action_idx = random.randint(0, num_agent_actions-1)
+        initial_action = convert_idx_to_agent_action(initial_action_idx)
+
+        initial_emotion_idx = random.randint(0, num_user_emotion_levels-1)
+
+        round_num = 0
+        last_user_action = None
+        last_user_emotion_level = initial_emotion_idx
+        last_agent_action = initial_action_idx
+        last_last_user_action = None
+        last_last_user_emotion_level = initial_emotion_idx
+        last_last_agent_action = initial_action_idx
+
+        while True:
+
+            if round_num >= max_rounds: break
+            elif last_user_action is 'end_dialog':
+                reward = user_simulator.get_rewards()
+                memory.push(round_num, last_user_action, last_user_emotion_level, last_agent_action,
+                            round_num-1, last_last_user_action, last_last_user_emotion_level, last_last_agent_action,
+                            reward)
+                break
+            else:
+                agent_action_idx = random.randint(0, num_agent_actions-1)
+                agent_action = convert_idx_to_agent_action(agent_action_idx)
+                level, action_idx, emotion, action = user_simulator.update_user_emotion_and_action(agent_action)
+
+                last_last_agent_action, last_last_user_action, last_last_user_emotion_level = \
+                    last_agent_action, last_user_action, last_user_emotion_level
+                last_agent_action, last_user_action, last_user_emotion_level = \
+                    agent_action_idx, action_idx, level
+                if round_num == 0:
+                    round_num += 1
+                    continue
+
+                reward = user_simulator.get_rewards()
+                memory.push(round_num, last_user_action, last_user_emotion_level, last_agent_action,
+                            round_num-1, last_last_user_action, last_last_user_emotion_level, last_last_agent_action,
+                            reward)
+
+                if len(memory) > current_length:
+                    current_length = len(memory)
+                    pbar.update(1)
+
+                round_num += 1
+    pbar.close()
+    end_time = time.time()
+    print(f'Duration: {end_time - start_time}')
+
+    with open('data/memory.pkl', 'wb') as p:
+        pickle.dump(memory, p)
+
+    # with open('data/memory.pkl', 'rb') as p:
+    #     memory = pickle.load(p)
+    #
+    # print(f'length: {len(memory)}')
+    #
+    # sorted = sorted(memory.memory, key=lambda r: (r.round_num_2, r.last_user_action_idx_2, r.last_user_emotion_idx_2, r.last_agent_action_idx_2,
+    #                 r.round_num_1, r.last_user_action_idx_1, r.last_user_emotion_idx_1))
+    #
+    # with open('data/sorted_memory.pkl', 'wb') as p:
+    #     pickle.dump(sorted, p)
+
+    # with open('data/sorted_memory.pkl', 'rb') as p:
+    #     memory = pickle.load(p)
+    #
+    # print(memory[0])
+    # print(memory[1])
+    # print(memory[2])
+    # print(memory[3])
+    # print(memory[4])
+    # print(memory[5])
+    #
+    # print(memory[6])
+
+
+
+
 

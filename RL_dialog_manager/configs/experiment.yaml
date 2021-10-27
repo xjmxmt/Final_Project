@@ -15,7 +15,7 @@ use_usersim: True
 num_emotion: 4
 num_user_action: 3
 max_rounds: 20
-update_steps: 1000
+update_steps: 1
 action_shape: 6
 hidden_shape: 24
 

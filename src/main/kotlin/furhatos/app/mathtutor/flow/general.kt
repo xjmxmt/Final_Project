@@ -54,15 +54,15 @@ val Interaction: State = state {
 
 val FallbackState: State = state(Interaction) {
 
-    onEvent<Annoyed> {
-
-        furhat.attendNobody()
-        furhat.say ( "You look at bit annoyed. I am very sorry for that, I am still learning. " )
-        print(users.current)
-        furhat.attendAll()
-        furhat.say("Please talk slow and clearly to me. That helps!")
-        reentry()
-    }
+//    onEvent<Annoyed> {
+//
+//        furhat.attendNobody()
+//        furhat.say ( "You look at bit annoyed. I am very sorry for that, I am still learning. " )
+//        print(users.current)
+//        furhat.attendAll()
+//        furhat.say("Please talk slow and clearly to me. That helps!")
+//        reentry()
+//    }
 
     onResponse(cond={it.interrupted}) {
 
@@ -90,34 +90,34 @@ val FallbackState: State = state(Interaction) {
         reentry()
     }
 
-    onEvent<Smile> {
-        furhat.gesture(Gestures.BigSmile)
-        furhat.say("Now smiling")
-        reentry()
-    }
-
-    onEvent<Gaze> {
-        furhat.attendAll()
-        furhat.glance(users.current.id)
-    }
-
-    onEvent<LookAWay> {
-        furhat.say ( "Im looking awway" )
-        furhat.gesture(Gestures.GazeAway)
-    }
-
-    onEvent<GoToEncourage> {
-        furhat.say("I will encourage you!")
-        furhat.attendAll()
-        furhat.say("Hey relax, I am here to help you. Learning is a nice thing to do. ")
-        furhat.attendNobody()
-        furhat.say("I know it can be hard to solve these math problems")
-        furhat.attendAll()
-        furhat.ask("Shall I help you to explain the previous question?")
-        reentry()
-    }
-
-    onEvent<SayAgain> {
-        reentry()
-    }
+//    onEvent<Smile> {
+//        furhat.gesture(Gestures.BigSmile)
+//        furhat.say("Now smiling")
+//        reentry()
+//    }
+//
+//    onEvent<Gaze> {
+//        furhat.attendAll()
+//        furhat.glance(users.current.id)
+//    }
+//
+//    onEvent<LookAWay> {
+//        furhat.say ( "Im looking awway" )
+//        furhat.gesture(Gestures.GazeAway)
+//    }
+//
+//    onEvent<GoToEncourage> {
+//        furhat.say("I will encourage you!")
+//        furhat.attendAll()
+//        furhat.say("Hey relax, I am here to help you. Learning is a nice thing to do. ")
+//        furhat.attendNobody()
+//        furhat.say("I know it can be hard to solve these math problems")
+//        furhat.attendAll()
+//        furhat.ask("Shall I help you to explain the previous question?")
+//        reentry()
+//    }
+//
+//    onEvent<SayAgain> {
+//        reentry()
+//    }
 }
