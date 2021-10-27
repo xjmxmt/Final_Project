@@ -114,26 +114,55 @@ class UserSimulator:
         """
         Important function.
         User simulator uses this function to secretly generate action from emotion, since emotion is hidden,
-        using current emotion and emotion history.
+        using current emotion and last history emotion.
         """
 
-        # add random noise
-        # 1/20
-        flag = random.randint(0, 19)
-        if flag == 9:
-            action_idx, action = self.sample_random_action()
-            return action_idx, action
+        # # add random noise, not adding when generating training memory
+        # # p: 1/20
+        # flag = random.randint(0, 19)
+        # if flag == 9:
+        #     action_idx, action = self.sample_random_action()
+        #     return action_idx, action
 
         action = None
         action_idx = None
         emotion_indicator = np.mean(self.emotion_history)
 
-        if current_emotion_level == 3 and emotion_indicator >= 3:
+        # if current_emotion_level == 3 and emotion_indicator >= 3:
+        #     # the user is too frustrated to continue
+        #     action = 'end_dialog'
+        #     action_idx = self.actions_dict[action]
+        #
+        # elif current_emotion_level == 3 and emotion_indicator < 3:
+        #     # the user is not feeling okay
+        #     action = random.choice(['silence', 'end_dialog'])
+        #     action_idx = self.actions_dict[action]
+        #
+        # elif current_emotion_level == 0:
+        #     # the user is very happy
+        #     action = 'proceed'
+        #     action_idx = self.actions_dict[action]
+        #
+        # elif current_emotion_level <= 2 and emotion_indicator < 3:
+        #     # the user is feeling well
+        #     action = random.choice(['proceed', 'silence'])
+        #     action_idx = self.actions_dict[action]
+        #
+        # elif current_emotion_level <= 2 and emotion_indicator >= 3:
+        #     # the user is feeling better
+        #     action = random.choice(self.possible_actions)
+        #     action_idx = self.actions_dict[action]
+
+        if self.last_emotion_level is None:
+            action = random.choice(['proceed', 'silence', 'end_dialog'])
+            action_idx = self.actions_dict[action]
+
+        elif current_emotion_level == 3 and self.last_emotion_level == 3:
             # the user is too frustrated to continue
             action = 'end_dialog'
             action_idx = self.actions_dict[action]
 
-        elif current_emotion_level == 3 and emotion_indicator < 3:
+        elif current_emotion_level == 3 and self.last_emotion_level < 3:
             # the user is not feeling okay
             action = random.choice(['silence', 'end_dialog'])
             action_idx = self.actions_dict[action]
@@ -143,12 +172,12 @@ class UserSimulator:
             action = 'proceed'
             action_idx = self.actions_dict[action]
 
-        elif current_emotion_level <= 2 and emotion_indicator < 3:
+        elif current_emotion_level <= 2 and self.last_emotion_level < 3:
             # the user is feeling well
             action = random.choice(['proceed', 'silence'])
             action_idx = self.actions_dict[action]
 
-        elif current_emotion_level <= 2 and emotion_indicator >= 3:
+        elif current_emotion_level <= 2 and self.last_emotion_level == 3:
             # the user is feeling better
             action = random.choice(self.possible_actions)
             action_idx = self.actions_dict[action]
@@ -306,25 +335,16 @@ class UserSimulator:
         return self.last_emotion_level
 
 
-
-if __name__ == '__main__':
-    user_simulator = UserSimulator()
-
-    possible_agent_actions = ['goto_next_state', 'smile', 'gaze', 'look_away', 'goto_encourage_state', 'say_again']
-
-    config_path = 'configs/experiment.yaml'
-
-    with open(config_path) as file:
-        cfg = BareConfig()
-        yaml_data = yaml.load(file, Loader=yaml.FullLoader)
-        cfg.merge_yaml(yaml_data)
+def generate_memory_file():
+    """
+    Used for generating training records via heuristic search, and save as a pickle file
+    """
 
     max_rounds = cfg.max_rounds
     num_user_actions = 3
     num_user_emotion_levels = 4
     num_agent_actions = 6
-    total_length = max_rounds * num_user_actions ** 2 * num_user_emotion_levels ** 2 * num_agent_actions ** 2
-    print(f'total_length: {total_length}')  # 103681
+    total_length = 24320  # total length of searching space
 
     memory = ReplayMemory(total_length)
     print(f'reply_memory_length: {len(memory)}')
@@ -332,14 +352,20 @@ if __name__ == '__main__':
     start_time = time.time()
     pbar = tqdm(total=total_length+1)
     current_length = 0
+    initial_action_set = set()
+    initial_emotion_set = set()
     while True:
         if len(memory) == total_length:
             break
 
         initial_action_idx = random.randint(0, num_agent_actions-1)
+        while initial_action_idx in initial_action_set:
+            initial_action_idx = random.randint(0, num_agent_actions - 1)
         initial_action = convert_idx_to_agent_action(initial_action_idx)
 
         initial_emotion_idx = random.randint(0, num_user_emotion_levels-1)
+        while initial_emotion_idx in initial_emotion_set:
+            initial_emotion_idx = random.randint(0, num_user_emotion_levels-1)
 
         round_num = 0
         last_user_action = None
@@ -371,7 +397,7 @@ if __name__ == '__main__':
                     round_num += 1
                     continue
 
-                reward = user_simulator.get_rewards()
+                reward = last_user_emotion_level
                 memory.push(round_num, last_user_action, last_user_emotion_level, last_agent_action,
                             round_num-1, last_last_user_action, last_last_user_emotion_level, last_last_agent_action,
                             reward)
@@ -388,30 +414,49 @@ if __name__ == '__main__':
     with open('data/memory.pkl', 'wb') as p:
         pickle.dump(memory, p)
 
-    # with open('data/memory.pkl', 'rb') as p:
-    #     memory = pickle.load(p)
-    #
-    # print(f'length: {len(memory)}')
-    #
-    # sorted = sorted(memory.memory, key=lambda r: (r.round_num_2, r.last_user_action_idx_2, r.last_user_emotion_idx_2, r.last_agent_action_idx_2,
-    #                 r.round_num_1, r.last_user_action_idx_1, r.last_user_emotion_idx_1))
-    #
-    # with open('data/sorted_memory.pkl', 'wb') as p:
-    #     pickle.dump(sorted, p)
+    sorted_memory = sorted(memory.memory.deque, key=lambda r: (r.round_num_2, r.last_user_action_idx_2, r.last_user_emotion_idx_2, r.last_agent_action_idx_2,
+                    r.round_num_1, r.last_user_action_idx_1, r.last_user_emotion_idx_1, r.last_agent_action_idx_1))
 
-    # with open('data/sorted_memory.pkl', 'rb') as p:
-    #     memory = pickle.load(p)
-    #
-    # print(memory[0])
-    # print(memory[1])
-    # print(memory[2])
-    # print(memory[3])
-    # print(memory[4])
-    # print(memory[5])
-    #
-    # print(memory[6])
+    with open('data/sorted_memory.pkl', 'wb') as p:
+        pickle.dump(sorted_memory, p)
 
 
+if __name__ == '__main__':
+    user_simulator = UserSimulator()
 
+    possible_agent_actions = ['goto_next_state', 'smile', 'gaze', 'look_away', 'goto_encourage_state', 'say_again']
 
+    config_path = 'configs/experiment.yaml'
+
+    with open(config_path) as file:
+        cfg = BareConfig()
+        yaml_data = yaml.load(file, Loader=yaml.FullLoader)
+        cfg.merge_yaml(yaml_data)
+
+    generate_memory_file()
+
+    # read memory
+    with open('data/sorted_memory.pkl', 'rb') as p:
+        memory = pickle.load(p)
+
+    # convert to more clear training records
+    total_records = []
+    num_records = 6  # every 6 actions
+    for i in range(0, len(memory), num_records):
+        if i > len(memory)//num_records: break
+
+        reward_list = []
+        for ii in range(6):
+            reward_list.append(memory[i+ii].reward)
+
+        round_num = memory[i].round_num_1
+        last_user_action_idx = memory[i].last_user_action_idx_1
+        last_user_emotion_idx = memory[i].last_user_emotion_idx_1
+        last_agent_action_idx = memory[i].last_agent_action_idx_1
+
+        total_records.append([round_num, last_user_action_idx, last_user_emotion_idx, last_agent_action_idx, reward_list])
+
+    # save as a pickle
+    with open('data/training_data.pkl', 'wb') as p:
+        pickle.dump(total_records, p)
 

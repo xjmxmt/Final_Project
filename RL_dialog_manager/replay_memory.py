@@ -4,8 +4,8 @@ import random
 # state: round_num, last_user_action_idx, last_user_emotion_idx, last_agent_action_idx
 Transition = namedtuple(
     'Transition',
-    ('round_num_2', 'last_user_action_idx_2', 'last_user_emotion_idx_2', 'last_agent_action_idx_2',  # last state
-     'round_num_1', 'last_user_action_idx_1', 'last_user_emotion_idx_1', 'last_agent_action_idx_1',  # state
+    ('round_num_2', 'last_user_action_idx_2', 'last_user_emotion_idx_2', 'last_agent_action_idx_2',  # state
+     'round_num_1', 'last_user_action_idx_1', 'last_user_emotion_idx_1', 'last_agent_action_idx_1',  # last state
      'reward'))
 
 
@@ -30,7 +30,6 @@ class ReplayMemory(object):
         self.memory = Structure(size=capacity)
 
     def push(self, *args):
-        """Save a transition"""
         self.memory.append(Transition(*args))
 
     def sample(self, batch_size):

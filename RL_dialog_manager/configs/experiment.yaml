@@ -2,7 +2,7 @@
 # Experiment configuration
 batch_size: 1
 test_batch_size: 1
-max_iteration: 10000
+max_iteration: 100000
 lr: 0.001
 load: False
 cuda: True
