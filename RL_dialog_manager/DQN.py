@@ -85,7 +85,10 @@ class DQNTrainer:
 
         # one-hot vector of round index
         round_num_vector = torch.zeros((int(math.log(cfg.max_rounds, 2)), ))
-        round_num_vector[round_num] = 1.0
+        bn = format(round_num, 'b')
+        for i in range(len(bn)):
+            if bn[i] == 1:
+                round_num_vector[i] = 1.0
 
         # one-hot vector of last user action
         last_user_action_vector = torch.zeros((self.num_user_action, ))

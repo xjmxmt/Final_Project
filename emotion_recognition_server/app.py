@@ -72,7 +72,7 @@ def gen(camera):
     return xs
 
 
-@app.route('/emotion')
+@app.route('/affect')
 def retEmotion():
     print('This is running...')
     print('Request from client: ', request.args['data'])

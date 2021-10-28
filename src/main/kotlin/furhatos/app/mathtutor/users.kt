@@ -127,7 +127,7 @@ public class Affect {
 }
 
 enum class EmotionActionEnum {
-    goto_nex_state,
+    goto_next_state,
     smile,
     gaze,
     look_away,
@@ -136,13 +136,15 @@ enum class EmotionActionEnum {
     unknown
 }
 
+data class ActionTuple(val action: String, val minute: Gesture)
+
 val User.emotion : Emotion
     get() =  Emotion()
 
 public class Emotion {
     val client = DialogManagerClient()
 
-    fun getAction(round_num : Int, user_action : String, user_emotion_idx : Int, agent_action : String) : Gesture {
+    fun getAction(round_num : Int, user_action : String, user_emotion_idx : Int, agent_action : String) : ActionTuple {
         print("RUNNING THE DIALOG MANAGER IN THE CLIENT!")
         var raw_action = ""
         try{
@@ -157,13 +159,13 @@ public class Emotion {
         print("GOTTEN ACTION: "+ action)
 
         return when(action){
-            EmotionActionEnum.goto_nex_state -> Gestures.Blink// GoToNextState()
-            EmotionActionEnum.goto_encourage_state -> Gestures.Thoughtful//GoToEncourage()
-            EmotionActionEnum.gaze -> Gestures.GazeAway// Gaze()
-            EmotionActionEnum.look_away -> Gestures.CloseEyes// LookAWay()
-            EmotionActionEnum.say_again -> Gestures.Nod// SayAgain()
-            EmotionActionEnum.smile -> Gestures.BigSmile//Smile()
-            EmotionActionEnum.unknown -> Gestures.Blink//Unknown()
+            EmotionActionEnum.goto_next_state -> ActionTuple(action.toString(), Gestures.Blink)// GoToNextState()
+            EmotionActionEnum.goto_encourage_state -> ActionTuple(action.toString(), Gestures.Thoughtful)//GoToEncourage()
+            EmotionActionEnum.gaze -> ActionTuple(action.toString(), Gestures.GazeAway)// Gaze()
+            EmotionActionEnum.look_away -> ActionTuple(action.toString(), Gestures.CloseEyes)// LookAWay()
+            EmotionActionEnum.say_again -> ActionTuple(action.toString(), Gestures.Nod)// SayAgain()
+            EmotionActionEnum.smile -> ActionTuple(action.toString(), Gestures.BigSmile)//Smile()
+            EmotionActionEnum.unknown -> ActionTuple(action.toString(), Gestures.Blink)//Unknown()
         }
     }
 }
