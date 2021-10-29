@@ -2,6 +2,7 @@ package furhatos.app.mathtutor.flow
 
 import furhatos.app.mathtutor.*
 import furhatos.app.mathtutor.nlu.*
+import furhatos.event.Event
 import furhatos.flow.kotlin.*
 import furhatos.gestures.Gestures
 import furhatos.nlu.common.No
@@ -34,8 +35,10 @@ val Start: State = state(FallbackState) {
         furhat.gesture(Gestures.BigSmile)  // agent's initial action is smile
 
         user_emotion_idx = users.current.affect
-//        print("debugging: showing affect: " + user_emotion_idx)
-//        raise(user_emotion)
+        print("debugging: start: showing affect: " + user_emotion_idx)
+        if (user_emotion_idx == 1){
+            raise(Doubt())
+        }
 
         furhat.glance(location)
         furhat.ask("Hello! How can I help you?")
@@ -49,13 +52,13 @@ val Start: State = state(FallbackState) {
         furhat.ask("Hello! How can i help you?")
     }
 
-//    onEvent<Doubt>{
-//        furhat.attendAll()
-//        furhat.gesture(users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action))
-//        furhat.say("Do i continue after this?")
-//
-//        goto(StartDoubt)
-//    }
+    onEvent<Doubt>{
+        furhat.attendAll()
+        furhat.gesture(Gestures.BigSmile)
+        furhat.say("Do i continue after this?")
+
+        goto(StartDoubt)
+    }
 
     onResponse<Confused> {
         furhat.attendAll()
@@ -89,6 +92,7 @@ val StartDoubt: State = state(FallbackState){
         val (_, gesture) = users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)
         furhat.gesture(gesture, async = false)
         user_emotion_idx = users.current.affect
+        print("debugging: start doubt: showing affect: " + user_emotion_idx)
         furhat.say ("Hi there, you look a bit in doubt.")
 
         furhat.attend(users.random)

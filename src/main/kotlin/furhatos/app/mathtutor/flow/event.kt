@@ -3,7 +3,7 @@ package furhatos.app.mathtutor.flow
 import furhatos.event.Event
 
 //// User event
-//class Doubt : Event()
+class Doubt : Event()
 //class Annoyed : Event()
 //class Disaprove : Event()
 //class Happy : Event()
