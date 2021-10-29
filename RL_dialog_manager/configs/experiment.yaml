@@ -2,7 +2,7 @@
 # Experiment configuration
 batch_size: 1
 test_batch_size: 1
-max_iteration: 10000
+max_iteration: 100000
 lr: 0.001
 load: False
 cuda: True
@@ -14,8 +14,8 @@ dir_checkpoint: 'checkpoints'
 use_usersim: True
 num_emotion: 4
 num_user_action: 3
-max_rounds: 20
-update_steps: 1000
+max_rounds: 16
+update_steps: 1
 action_shape: 6
 hidden_shape: 24
 

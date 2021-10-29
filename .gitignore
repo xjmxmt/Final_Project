@@ -12,6 +12,7 @@ out/*
 RL_dialog_manager/__pycache__/*
 RL_dialog_manager/.idea/*
 RL_dialog_manager/data/*
+!RL_dialog_manager/data/*.pkl
 RL_dialog_manager/utils/__pycache__/*
 
 emotion_recognition_server/__pycache__/*

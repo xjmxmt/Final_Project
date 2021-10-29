@@ -1,4 +1,5 @@
 import random
+import pickle
 import numpy as np
 import yaml
 import logging
@@ -73,6 +74,9 @@ class DQNTrainer:
         self.criterion = nn.SmoothL1Loss()
         self.optimizer = optim.RMSprop(self.main_network.parameters())
 
+        with open('data/training_data.pkl', 'rb') as p:
+            self.memory = pickle.load(p)
+
     def from_action_to_idx(self, action):
 
         return self.actions_dict[action]
@@ -81,7 +85,10 @@ class DQNTrainer:
 
         # one-hot vector of round index
         round_num_vector = torch.zeros((int(math.log(cfg.max_rounds, 2)), ))
-        round_num_vector[round_num] = 1.0
+        bn = format(round_num, 'b')
+        for i in range(len(bn)):
+            if bn[i] == 1:
+                round_num_vector[i] = 1.0
 
         # one-hot vector of last user action
         last_user_action_vector = torch.zeros((self.num_user_action, ))
@@ -110,7 +117,7 @@ class DQNTrainer:
 
         return rewards
 
-    def train_net(self):
+    def train_net(self, using_memory=True):
 
         """
         Function to train the DQN, and save the weights.
@@ -121,7 +128,7 @@ class DQNTrainer:
         """
 
         # initializer: HeUniform()
-
+        idx = 0
         for iteration in range(self.max_iteration):
 
             round_num = 0
@@ -137,33 +144,42 @@ class DQNTrainer:
             last_agent_action_idx = initial_action_idx
             state_vector = torch.zeros((self.state_shape, ))
 
-            for batch_idx in range(self.batch_size):
-                self.user_simulator.reset()
-                while True:
-                    if round_num > self.max_rounds: break
-                    elif last_user_action is 'end_dialog': break
-                    elif batch_idx == 0:
-                        level, action_idx, emotion, action = self.user_simulator.update_user_emotion_and_action(initial_action)
-                        last_user_action, last_user_action_idx = action, action_idx
-                        last_user_emotion, last_user_emotion_idx = emotion, level
-                        round_num += 1
-                    else:
-                        state_vector = self.get_state_vector(round_num, last_user_action_idx, last_user_emotion_idx, last_agent_action_idx)
-                        action_logits = self.main_network(state_vector)
-                        action = self.possible_agent_actions[torch.max(action_logits)]
-                        level, action_idx, emotion, action = self.user_simulator.update_user_emotion_and_action(action)
-                        last_user_action, last_user_action_idx = action, action_idx
-                        last_user_emotion, last_user_emotion_idx = emotion, level
-                        round_num += 1
+            if using_memory:
+                if idx >= len(self.memory): idx = 0
+                round_num, last_user_action_idx, last_user_emotion_idx, last_agent_action_idx, rewards_array = \
+                self.memory[idx]
+                idx += 1
+                state_vector = self.get_state_vector(round_num, last_user_action_idx, last_user_emotion_idx,
+                                                     last_agent_action_idx)
+                action_logits = self.main_network(state_vector)
+            else:
+                for batch_idx in range(self.batch_size):
 
-                reward = self.user_simulator.get_rewards()
-                rewards_array[batch_idx] = reward
+                    self.user_simulator.reset()
+                    while True:
+                        if round_num > self.max_rounds: break
+                        elif last_user_action is 'end_dialog': break
+                        elif batch_idx == 0:
+                            level, action_idx, emotion, action = self.user_simulator.update_user_emotion_and_action(initial_action)
+                            last_user_action, last_user_action_idx = action, action_idx
+                            last_user_emotion, last_user_emotion_idx = emotion, level
+                            round_num += 1
+                        else:
+                            state_vector = self.get_state_vector(round_num, last_user_action_idx, last_user_emotion_idx, last_agent_action_idx)
+                            action_logits = self.main_network(state_vector)
+                            action = self.possible_agent_actions[torch.max(action_logits)]
+                            level, action_idx, emotion, action = self.user_simulator.update_user_emotion_and_action(action)
+                            last_user_action, last_user_action_idx = action, action_idx
+                            last_user_emotion, last_user_emotion_idx = emotion, level
+                            round_num += 1
+
+                    reward = self.user_simulator.get_rewards()
+                    rewards_array[batch_idx] = reward
 
             clipped_rewards = self.clipping_rewards(rewards_array)
+            clipped_rewards = torch.Tensor(clipped_rewards)
             # logging.info(f'Iteration {iteration+1}/{self.max_iteration}. '
             #              f'One dialogue finished. Rewards: {clipped_rewards}')
-
-            action_logits = self.main_network(state_vector)
 
             loss = self.criterion(action_logits, clipped_rewards)
             logging.info(f'Iteration {iteration+1}/{self.max_iteration}. '

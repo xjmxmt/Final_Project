@@ -2,13 +2,13 @@ package furhatos.app.mathtutor.flow
 
 import furhatos.event.Event
 
-// User event
+//// User event
 class Doubt : Event()
-class Annoyed : Event()
-class Disaprove : Event()
-class Happy : Event()
-class Unknown : Event()
-class Approve : Event()
+//class Annoyed : Event()
+//class Disaprove : Event()
+//class Happy : Event()
+//class Unknown : Event()
+//class Approve : Event()
 
 // Agent emotion
 class GoToNextState: Event()
