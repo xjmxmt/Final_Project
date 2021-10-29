@@ -160,10 +160,10 @@ public class Emotion {
 
         return when(action){
             EmotionActionEnum.goto_next_state -> ActionTuple(action.toString(), Gestures.Blink)// GoToNextState()
-            EmotionActionEnum.goto_encourage_state -> ActionTuple(action.toString(), Gestures.Thoughtful)//GoToEncourage()
+            EmotionActionEnum.goto_encourage_state -> ActionTuple(action.toString(), Gestures.Surprise)//GoToEncourage()
             EmotionActionEnum.gaze -> ActionTuple(action.toString(), Gestures.GazeAway)// Gaze()
             EmotionActionEnum.look_away -> ActionTuple(action.toString(), Gestures.CloseEyes)// LookAWay()
-            EmotionActionEnum.say_again -> ActionTuple(action.toString(), Gestures.Nod)// SayAgain()
+            EmotionActionEnum.say_again -> ActionTuple(action.toString(), Gestures.Thoughtful)// SayAgain()
             EmotionActionEnum.smile -> ActionTuple(action.toString(), Gestures.BigSmile)//Smile()
             EmotionActionEnum.unknown -> ActionTuple(action.toString(), Gestures.Blink)//Unknown()
         }
