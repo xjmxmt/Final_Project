@@ -35,7 +35,7 @@ val Start: State = state(FallbackState) {
         furhat.gesture(Gestures.BigSmile)  // agent's initial action is smile
 
         user_emotion_idx = users.current.affect
-        print("debugging: start: showing affect: " + user_emotion_idx)
+//        print("debugging: start: showing affect: " + user_emotion_idx)
         if (user_emotion_idx == 1){
             raise(Doubt())
         }
@@ -92,7 +92,7 @@ val StartDoubt: State = state(FallbackState){
         val (_, gesture) = users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)
         furhat.gesture(gesture, async = false)
         user_emotion_idx = users.current.affect
-        print("debugging: start doubt: showing affect: " + user_emotion_idx)
+//        print("debugging: start doubt: showing affect: " + user_emotion_idx)
         furhat.say ("Hi there, you look a bit in doubt.")
 
         furhat.attend(users.random)
@@ -153,6 +153,7 @@ val MTIntro = state(FallbackState) {
         val (_, gesture2) = users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)
         furhat.gesture(gesture2, async = false)
         user_emotion_idx = users.current.affect
+//        print("debugging: MIT intro: showing affect: " + user_emotion_idx)
         furhat.ask("Would you like to learn some math now?")
     }
 
@@ -187,6 +188,7 @@ val LearnIntro: State = state(FallbackState) {
         val (_, gesture) = users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)
         furhat.gesture(gesture, async = false)
         user_emotion_idx = users.current.affect
+//        print("debugging: Learn intro: showing affect: " + user_emotion_idx)
         furhat.attendNobody()
         furhat.ask("Let's get started then! Would you like to learn about how to do " +
                 "percentage problems or have some practice on it?")
@@ -223,6 +225,7 @@ val Practice: State = state(FallbackState) {
         val (_, gesture) = users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)
         furhat.gesture(gesture, async = false)
         user_emotion_idx = users.current.affect
+//        print("debugging: practice: showing affect: " + user_emotion_idx)
         furhat.ask("""To adjust the difficulty, please tell me what grade you are in now.""".trimIndent())
     }
 
@@ -261,6 +264,7 @@ val Explanations: State = state(FallbackState) {
         val (_, gesture) = users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)
         furhat.gesture(gesture, async = false)
         user_emotion_idx = users.current.affect
+//        print("debugging: explanations: showing affect: " + user_emotion_idx)
         furhat.ask("Ok, let's sort this out together! I'll give a simple example here! " +
                 "Suppose that we have 100 apples, then what is the percentage of one apple?")
     }
@@ -299,6 +303,7 @@ val SimpleQuestions: State = state(FallbackState){
         val (_, gesture) = users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)
         furhat.gesture(gesture, async = false)
         user_emotion_idx = users.current.affect
+//        print("debugging: simple question: showing affect: " + user_emotion_idx)
         furhat.ask("Great! I have prepared some puzzles of percentage within ten for you! Are you ready?")
     }
 
@@ -329,6 +334,7 @@ val Questions: State = state(FallbackState){
     onEntry {
         val level = users.current.info.getLevel()
         user_emotion_idx = users.current.affect
+//        print("debugging: question: showing affect: " + user_emotion_idx)
         furhat.ask("Great! I have prepared some puzzles of ${level} level for you! Are you ready?")
     }
 
@@ -362,6 +368,7 @@ val WaitReady: State = state(FallbackState){
         val (_, gesture) = users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)
         furhat.gesture(gesture, async = false)
         user_emotion_idx = users.current.affect
+//        print("debugging: wait ready: showing affect: " + user_emotion_idx)
         furhat.ask("Ok! Just tell me when you are ready!", timeout = waiting_time)
     }
 
@@ -398,6 +405,7 @@ var AskQuestion: State = state(FallbackState){
         val (_, gesture) = users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)
         furhat.gesture(gesture, async = false)
         user_emotion_idx = users.current.affect
+//        print("debugging: ask question: showing affect: " + user_emotion_idx)
         val number_q = users.current.score.getCurrentQuestionNumber()
         val current_q = users.current.score.getCurrentQuestion()
         val level_q = users.current.score.getCurrentLevel()
@@ -488,6 +496,7 @@ var AnswerWrong : State = state(FallbackState){
         val (_, gesture) = users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)
         furhat.gesture(gesture, async = false)
         user_emotion_idx = users.current.affect
+//        print("debugging: answer wrong: showing affect: " + user_emotion_idx)
         val current_q = users.current.score.getCurrentQuestion()
         current_q.incrementTries()
 
@@ -525,6 +534,7 @@ var AnswerCorrect: State = state(FallbackState){
         val (_, gesture) = users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)
         furhat.gesture(gesture, async = false)
         user_emotion_idx = users.current.affect
+//        print("debugging: answer correct: showing affect: " + user_emotion_idx)
 
         val current_q = users.current.score.getCurrentQuestion()
 
@@ -611,6 +621,7 @@ var UserFrustrated : State = state(FallbackState){
         val (_, gesture) = users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)
         furhat.gesture(gesture, async = false)
         user_emotion_idx = users.current.affect
+//        print("debugging: user frustrated: showing affect: " + user_emotion_idx)
     }
 
     onResponse<Yes> {
@@ -648,6 +659,7 @@ var ExplainAnswer : State = state(FallbackState){
         furhat.attendNobody()
         furhat.say(current_q.explaination)
         user_emotion_idx = users.current.affect
+//        print("debugging: explain answer: showing affect: " + user_emotion_idx)
 
         furhat.attendAll()
         furhat.ask("Do you understand it now?")
@@ -690,6 +702,11 @@ var EnoughExercisesEndState : State = state(FallbackState){
         furhat.say("I am proud of you. You had "+correct_q+" questions correct and "+wrong_q+" questions incorrect.")
         furhat.attendAll()
 
+        val (_, gesture) = users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)
+        furhat.gesture(gesture, async = false)
+        user_emotion_idx = users.current.affect
+//        print("debugging: enough exercises end state: showing affect: " + user_emotion_idx)
+
         val userPoints : Double = users.current.score.getScore()
         var score = "must "
 
@@ -721,6 +738,7 @@ var UserWantsToStopCheck : State = state(FallbackState){
         val (_, gesture) = users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)
         furhat.gesture(gesture, async = false)
         user_emotion_idx = users.current.affect
+//        print("debugging: user wants to stop check: showing affect: " + user_emotion_idx)
 
         furhat.ask("Do you really want to stop?")
     }
@@ -744,6 +762,7 @@ var UserStoppedEndState : State = state(FallbackState){
         val (_, gesture) = users.current.emotion.getAction(round_num, user_action, user_emotion_idx, agent_action)
         furhat.gesture(gesture, async = false)
         user_emotion_idx = users.current.affect
+//        print("debugging: user stopped end state: showing affect: " + user_emotion_idx)
 
         furhat.say("You can always can come back again. Goodbye")
     }
